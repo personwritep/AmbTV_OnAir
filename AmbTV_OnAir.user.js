@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         AmbTV OnAir
-// @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  AbemaTV ユーティリティ
-// @author       Ameba User
-// @match       https://abema.tv/*
-// @icon          https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @name        AmbTV OnAir
+// @namespace        http://tampermonkey.net/
+// @version        2.2
+// @description        AbemaTV ユーティリティ
+// @author        AbemaTV User
+// @match        https://abema.tv/*
+// @icon        https://www.google.com/s2/favicons?sz=64&domain=abema.tv
 // @noframes
 // @grant        none
 // @updateURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_Comfy.user.js
