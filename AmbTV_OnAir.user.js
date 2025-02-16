@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        2.2
+// @version        2.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -170,7 +170,8 @@ function full_check(){
 
 function v_vol(n){ // 0: ミュート　1: 通常
     oa_mute=get_cookie('oa_mute');
-    let button=document.querySelector('.com-playback-Volume__icon-button');
+    let button=document.querySelector(
+        '.com-tv-TVController__volume .com-playback-Volume__icon-button');
     if(button){
         if(full_check()){ // フルスクリーン表示の場合
             let label=button.getAttribute('aria-label');
@@ -281,7 +282,8 @@ function cm_setting(){
             if(event.ctrlKey){
                 cm_pannel(); }
             else{
-                let button=document.querySelector('.com-playback-Volume__icon-button');
+                let button=document.querySelector(
+                    '.com-tv-TVController__volume .com-playback-Volume__icon-button');
                 if(button && protect==0){
                     let label=button.getAttribute('aria-label');
                     if(label=='音声をオフにする'){
