@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        2.3
+// @version        2.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -11,6 +11,7 @@
 // @updateURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_OnAir.user.js
 // @downloadURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_OnAir.user.js
 // ==/UserScript==
+
 
 
 let oa_mute;
@@ -37,26 +38,24 @@ function tv_player_env(){
             clearInterval(interval);
             player_vol(TP); }}
 
-
-    history_content();
-
 } // tv_player_env()
 
 
 
 function player_vol(TP){
+
     let monitor1=new MutationObserver(con_vol);
-    monitor1.observe( TP, { childList: true });
+    monitor1.observe(TP, { childList: true });
 
     con_vol();
 
     function con_vol(){ // ABEMAロゴによるミュート
-        let LF=document.querySelector('.com-tv-LinearFooter__feed-super');
+        let FST=document.querySelector('.com-tv-NowOnAirController__feed-super');
         if(TP.querySelector('.com-tv-TVScreen__eyecatch')){
-            if(LF.textContent){
+            if(FST.textContent){
                 v_vol(1); }}
         else{
-            if(!LF.textContent){
+            if(!FST.textContent){
                 v_vol(0);
                 if(full_check()){
                     monitor1.disconnect();
@@ -68,14 +67,15 @@ function player_vol(TP){
 
 
 
-    let LF=document.querySelector('.com-tv-LinearFooter__feed-super');
+
+    let FST=document.querySelector('.com-tv-NowOnAirController__feed-super');
     let monitor2=new MutationObserver(con_vol2);
-    monitor2.observe( LF, { childList: true });
+    monitor2.observe( FST, { childList: true });
 
     con_vol2();
 
     function con_vol2(){ // 動画タイトルによるミュート
-        if(LF.textContent){
+        if(FST.textContent){
             v_vol(1); }
         else{
             setTimeout(()=>{
@@ -120,47 +120,17 @@ function player_vol(TP){
     } // ad_check()
 
 
-
-    setTimeout(()=>{
-        let LCLI=document.querySelector('.com-tv-LinearChannelListItem--active a');
-        if(LCLI){
-            let monitor3=new MutationObserver(con_vol3);
-            monitor3.observe( LCLI, { attributes: true });
-
-            con_vol3();
-
-            function con_vol3(){
-                v_vol(1);
-                con_vol2(); }}
-    }, 200 );
-
-
-
-    setTimeout(()=>{
-        let side=document.querySelector('.com-tv-FeedSidePanel__close-button');
-        if(side){
-            side.click(); }
-    }, 600);
-
-    setTimeout(()=>{
-        let HM=document.querySelector('.com-m-HeaderMenu');
-        let SNc=document.querySelector('.c-application-SideNavigation--collapsed');
-        if(HM && !SNc){
-            HM.click(); }
-    }, 700);
-
-
-
     check_cookie();
-    channel_setting();
     cm_setting();
+    channel_setting();
 
-} // player_vol(TP)
+} // player_vol()
+
 
 
 
 function full_check(){
-    let full_button=document.querySelector('.com-tv-TVController__fullscreen button');
+    let full_button=document.querySelector('.com-tv-TVController__fullscreen-button');
     if(full_button){
         let label=full_button.getAttribute('aria-label');
         if(label=='フルスクリーンを解除する'){
@@ -171,7 +141,7 @@ function full_check(){
 function v_vol(n){ // 0: ミュート　1: 通常
     oa_mute=get_cookie('oa_mute');
     let button=document.querySelector(
-        '.com-tv-TVController__volume .com-playback-Volume__icon-button');
+        '.com-tv-TVController .com-playback-Volume__icon-button');
     if(button){
         if(full_check()){ // フルスクリーン表示の場合
             let label=button.getAttribute('aria-label');
@@ -197,6 +167,7 @@ function v_vol(n){ // 0: ミュート　1: 通常
                 else{
                     view(0); }
             }, 40); }
+
     } // button
 
 } // v_vol()
@@ -261,6 +232,7 @@ function check_cookie(){
 
 
 
+
 function cm_setting(){
     let protect=0; //「ブラウザ表示」のボタンによる手動ミュート適用を防ぐ
 
@@ -270,47 +242,186 @@ function cm_setting(){
         monitor4.observe(TVS, { childList: true });
 
         function safe(){
-            let button1=TVS.querySelector('.com-tv-TVController button');
-            if(button1){
-                button1.addEventListener('mouseenter', function(){
-                    protect=1; });
-                button1.addEventListener('mouseleave', function(){
-                    protect=0; }); }}
+            let buttons=TVS.querySelectorAll('.com-tv-TVController button');
+            for(let k=0; k<buttons.length; k++){
+                buttons[k].addEventListener('mouseenter', function(){
+                    sp(1); });
+                buttons[k].addEventListener('mouseleave', function(){
+                    sp(0); }); }
+            function sp(n){
+                protect=n; }}
 
 
         TVS.onclick=function(event){
-            if(event.ctrlKey){
-                cm_pannel(); }
-            else{
-                let button=document.querySelector(
-                    '.com-tv-TVController__volume .com-playback-Volume__icon-button');
-                if(button && protect==0){
-                    let label=button.getAttribute('aria-label');
-                    if(label=='音声をオフにする'){
-                        v_vol(0); }
-                    else{
-                        v_vol(1); }}}}
+            let button=document.querySelector(
+                '.com-tv-TVController .com-playback-Volume__icon-button');
+            if(button && protect==0){
+                let label=button.getAttribute('aria-label');
+                if(label=='音声をオフにする'){
+                    v_vol(0); }
+                else{
+                    v_vol(1); }}}
+
+
+        let clear_style=document.querySelector('.oa_clear_style');
+        if(clear_style){
+            TVS.oncontextmenu=function(event){
+                if(!event.ctrlKey || !event.shiftKey){
+                    if(!full_check()){
+                        if(clear_style.disabled==true){
+                            clear_style.disabled=false; }
+                        else{
+                            clear_style.disabled=true; }}}}
+
+            document.addEventListener('keydown', function(event){
+                if(event.keyCode=='27'){
+                    if(clear_style.disabled==false){
+                        clear_style.disabled=true; }}});
+
+        } // if(clear_style)
+
     } // if(TVS)
 
-
-    let NOAC=document.querySelector('.c-tv-NowOnAirContainer');
-    let clear_style=document.querySelector('.oa_clear_style');
-    if(NOAC && clear_style){
-        NOAC.oncontextmenu=function(event){
-            if(!event.ctrlKey || !event.shiftKey){
-                if(!full_check()){
-                    if(clear_style.disabled==true){
-                        clear_style.disabled=false; }
-                    else{
-                        clear_style.disabled=true; }}}}
-
-        document.addEventListener('keydown', function(event){
-            if(event.keyCode=='27'){
-                if(clear_style.disabled==false){
-                    clear_style.disabled=true; }}});
-    } // if(NOAC && clear_style)
-
 } // cm_setting()
+
+
+
+
+function channel_setting(){
+    let header_right=document.querySelector('.com-application-Header__right');
+    if(header_right){
+        let sw=
+            '<div class="cms_sw">CM Mute</div>'+
+            '<div class="cha_sw">Channel <span>▢</span></div>'+
+            '<style>'+
+            '.com-application-Header__right { display: flex; flex-basis: 440px !important; } '+
+            '.cms_sw, .cha_sw { font: 14px Meiryo; align-self: center; cursor: pointer; '+
+            'padding: 12px 6px 0; height: 46px; white-space: nowrap; color: #fff; '+
+            'border: 1px solid #333; border-radius: 4px; background: #212121; } '+
+            '.cms_sw { margin-right: 20px; } '+
+            '.cha_sw { margin-right: 30px; } '+
+            '.cha_sw span { display: inline-block; } '+
+            '.cms_sw:hover, .cha_sw:hover { background: #373737; } '+
+            '</style>'+
+            '<style>'+
+            '.com-tv-TVScreen__sidebar-container-overlay { background: none; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__header { '+
+            'background: #00000050; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents { '+
+            'padding: 0; width: 260px; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentList { gap: 6px 12px; '+
+            'padding: 16px 24px; background: #b0bec5; } '+
+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem--inside-player '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem__inner { '+
+            'background-color: #000; padding: 1px; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem--inside-player'+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem--selected '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem__inner { '+
+            'background-color: #fff; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem { '+
+            'height: 62px; width: 209px; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem__outer { '+
+            'border-radius: 5px; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem--selected '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem__thumbnail { '+
+            'height: 60px; width: 107px; } '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem--selected '+
+            '.com-shared-shedule_group-ScheduleGroupContentCardItem__details { '+
+            'color: #000 !important; } '+
+
+            '.com-tv-TVScreen__NowOnAirController-overlay { height: 60px; } '+
+            '.com-tv-NowOnAirController__button:first-child { display: none; }  '+
+            '.com-tv-NowOnAirController__button { '+
+            'position: absolute; bottom: -62px; right: 168px; z-index: 1; } '+
+            '.com-a-Button--dark { background: none !important; } '+
+            '</style>'+
+            '<style class="cha_style">'+
+            '.com-shared-shedule_group-ScheduleGroupContentList { '+
+            'flex-direction: row; flex-wrap: wrap; justify-content: flex-start; } '+
+            '.c-application-DesktopAppContainer__content { min-width: 436px; } '+
+            '@media screen and (min-width: 540px){ '+
+            '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents { '+
+            'width: 480px; }} '+
+            '@media screen and (min-width: 760px){ '+
+            '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents { '+
+            'width: 704px; }} '+
+            '@media screen and (min-width: 980px){ '+
+            '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents { '+
+            'width: 924px; }} '+
+            '</style>'+
+            '<style class="oa_clear_style">'+
+            '.c-common-HeaderContainer-header { opacity: 0 !important; visibility: hidden !important; } '+
+            '.c-application-SideNavigation { display: none; } '+
+            '.com-tv-TVScreen__NowOnAirController-overlay, '+
+            '.com-tv-TVScreen__NowOnAirController-container { display: none; } '+
+            '.com-tv-TVScreen__sidebar-container-overlay, '+
+            '.com-tv-TVScreen__sidebar-container { display: none; } '+
+            '.com-tv-NowOnAirPlayerSectionLayout__side-panel { display: none; } '+
+            '.com-tv-NowOnAirRecommendedContentsContainerView__player { margin: 0; } '+
+            '.com-tv-NowOnAirRecommendedContentsContainerView__details { display: none; } '+
+            'html { scrollbar-width: none; } '+
+            //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
+            '</style>';
+
+        if(!header_right.querySelector('.cms_sw')){
+            header_right.insertAdjacentHTML('afterbegin', sw); }
+
+        let clear_style=document.querySelector('.oa_clear_style');
+        if(clear_style){
+            clear_style.disabled=true; }
+
+
+        let cha_style=document.querySelector('.cha_style');
+        let cha_sw=document.querySelector('.cha_sw');
+        if(cha_style && cha_sw){
+            oa_channel=get_cookie('oa_channel');
+            if(oa_channel!='1'){
+                oa_channel='0';
+                document.cookie='oa_channel=0; path=/; Max-Age=2592000';
+                sw_view(0);
+                cha_style.disabled=true; }
+            else{
+                oa_channel='1';
+                document.cookie='oa_channel=1; path=/; Max-Age=2592000';
+                sw_view(1);
+                cha_style.disabled=false; }
+
+            cha_sw.onclick=function(){
+                if(oa_channel=='0'){
+                    oa_channel='1'
+                    document.cookie='oa_channel=1; path=/; Max-Age=2592000';
+                    sw_view(1);
+                    cha_style.disabled=false; }
+                else{
+                    oa_channel='0';
+                    document.cookie='oa_channel=0; path=/; Max-Age=2592000';
+                    sw_view(0);
+                    cha_style.disabled=true; }}
+
+            function sw_view(n){
+                let swsp=cha_sw.querySelector('span');
+                if(swsp){
+                    if(n==0){
+                        swsp.style.transform='scaleX(0.5)'; }
+                    else{
+                        swsp.style.transform='scaleX(1)'; }}}
+
+        } // if(cha_style && cha_sw)
+
+
+
+        let cms_sw=document.querySelector('.cms_sw');
+        if(cms_sw){
+            cms_sw.onclick=function(){
+                let amboa=document.querySelector('#amboa');
+                if(!amboa){
+                    cm_pannel(); }
+                else{
+                    amboa.remove(); }}}}
+
+} // channel_setting()
+
 
 
 
@@ -360,6 +471,7 @@ function cm_pannel(){
         'input[type="radio"]{ margin: 0 .2em; }'+
         '</style>'+
         '</div>';
+
     if(!document.querySelector('#amboa')){
         document.body.insertAdjacentHTML('beforeend', panel); }
 
@@ -466,142 +578,11 @@ function cm_pannel(){
 
 
     function live_mute(){
-        let LF=document.querySelector('.com-tv-LinearFooter__feed-super');
-        if(!LF.textContent){
+        let FST=document.querySelector('.com-tv-NowOnAirController__feed-super');
+        if(!FST.textContent){
             setTimeout(()=>{
                 oa_mute=get_cookie('oa_mute');
                 v_vol(oa_mute);
             }, 200); }}
 
 } // cm_pannel()
-
-
-
-function channel_setting(){
-    let header_right=document.querySelector('.com-application-Header__right');
-    if(header_right){
-        let sw=
-            '<div class="cms_sw">CM Mute</div>'+
-            '<div class="cha_sw">Channel</div>'+
-            '<style>'+
-            '.com-application-Header__right { display: flex; flex-basis: 440px !important; } '+
-            '.cms_sw, .cha_sw { font: 14px Meiryo; align-self: center; cursor: pointer; '+
-            'padding: 12px 6px 0; height: 46px; white-space: nowrap; color: #fff; '+
-            'border: 1px solid #333; border-radius: 4px; background: #212121; } '+
-            '.cms_sw { margin-right: 20px; } '+
-            '.cha_sw { margin-right: 30px; } '+
-            '.cms_sw:hover, .cha_sw:hover { background: #373737; } '+
-            '</style>'+
-            '<style>'+
-            '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
-            '.com-tv-LinearChannelListItem { padding: 0 !important; } '+
-            '.com-tv-LinearChannelListItem__inner { background-color: #000 !important; } '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__inner { '+
-            'border-radius: 4px; box-shadow: inset 0 0 0 1px #607d8b; background: #fff !important; } '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__thumbnail { '+
-            'height: 54px !important; width: 96px !important; } '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__title, '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__broadcasting-date { '+
-            'color: #000 !important; } '+
-            '</style>'+
-            '<style class="cha_style">'+
-            '.com-tv-LinearChannelList { width: 958px; } '+
-            '.com-tv-LinearChannelList:before { height: 90px !important; } '+
-            '.com-tv-LinearChannelList:after { height: 75px !important; } '+
-            '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row !important; '+
-            'justify-content: flex-start !important; padding: 15px 0 9px 15px; background: #b0bec5; } '+
-            '.com-tv-LinearChannelListItem { padding: 0 10px !important; } '+
-            '</style>'+
-            '<style class="oa_clear_style">'+
-            '.c-common-HeaderContainer-header { opacity: 0 !important; visibility: hidden !important; } '+
-            '.c-application-SideNavigation { display: none; } '+
-            '.c-tv-NowOnAirContainer__remote-controller { display: none; } '+
-            '.com-tv-TVScreen__footer-container { '+
-            'transform: translateY(0) !important; visibility: hidden !important; } '+
-            //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
-            '</style>';
-
-        if(!header_right.querySelector('.cms_sw')){
-            header_right.insertAdjacentHTML('afterbegin', sw); }
-
-        let clear_style=document.querySelector('.oa_clear_style');
-        if(clear_style){
-            clear_style.disabled=true; }
-
-
-        let cha_style=document.querySelector('.cha_style');
-        let cha_sw=document.querySelector('.cha_sw');
-        if(cha_style && cha_sw){
-            oa_channel=get_cookie('oa_channel');
-            if(oa_channel!='1'){
-                oa_channel='0';
-                document.cookie='oa_channel=0; path=/; Max-Age=2592000';
-                cha_style.disabled=true; }
-            else{
-                oa_channel='1';
-                document.cookie='oa_channel=1; path=/; Max-Age=2592000';
-                cha_style.disabled=false; }
-
-            cha_sw.onclick=function(){
-                if(oa_channel=='0'){
-                    oa_channel='1'
-                    document.cookie='oa_channel=1; path=/; Max-Age=2592000';
-                    cha_style.disabled=false; }
-                else{
-                    oa_channel='0';
-                    document.cookie='oa_channel=0; path=/; Max-Age=2592000';
-                    cha_style.disabled=true; }
-                cha_check(); }}
-
-
-        function cha_check(){
-            let swicher=document.querySelector('.com-tv-LinearChannelSwitcher button');
-            if(swicher){
-                if(document.createEvent){
-                    let evt=new Event('mouseover', { bubbles: true, cancelable: false });
-                    swicher.dispatchEvent(evt); }}}
-
-
-        let cms_sw=document.querySelector('.cms_sw');
-        if(cms_sw){
-            cms_sw.onclick=function(){
-                let amboa=document.querySelector('#amboa');
-                if(!amboa){
-                    cm_pannel(); }
-                else{
-                    amboa.remove(); }}}}
-
-} // channel_setting()
-
-
-
-function history_content(){
-    let lastpath=sessionStorage.getItem('ATV_OA');
-    if(location.pathname.startsWith('/now-on-air/')){
-        lastpath=location.pathname;
-        sessionStorage.setItem('ATV_OA', lastpath); }
-
-    let CCP=document.querySelectorAll('.com-home-ChannelCardLinksPanel__item');
-    if(CCP.length>0){
-        for(let k=0; k<CCP.length; k++){
-            let link=CCP[k].querySelector('a').pathname;
-            if(link && link==lastpath){
-                CCP[k].style.boxShadow='0 0 0 4px #000, 0 0 0 6px #2196f3';
-                CCP[k].style.borderRadius='2px'; }}}
-
-
-    setTimeout(()=>{
-        let TACB=document.querySelectorAll('.com-home-TvAreaCardButton__background img');
-        if(TACB.length>0){
-            for(let k=0; k<TACB.length; k++){
-                let src=TACB[k].src;
-                src=src.split('.webp?')[0];
-                let srcl=src.split('/');
-                srcl='/now-on-air/'+ srcl[srcl.length -1];
-                if(srcl==lastpath){
-                    let but=TACB[k].closest('button');
-                    but.style.outline='2px solid #2196f3';
-                    but.style.borderRadius='2px'; }}}
-    }, 800);
-
-} // history_content()
