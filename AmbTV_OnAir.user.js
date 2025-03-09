@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        2.4
+// @version        2.5
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -123,6 +123,7 @@ function player_vol(TP){
     check_cookie();
     cm_setting();
     channel_setting();
+    upper_margin();
 
 } // player_vol()
 
@@ -362,6 +363,10 @@ function channel_setting(){
             '.com-tv-NowOnAirRecommendedContentsContainerView__player { margin: 0; } '+
             '.com-tv-NowOnAirRecommendedContentsContainerView__details { display: none; } '+
             //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
+            '</style>'+
+            '<style class="top_style">'+
+            '.com-tv-NowOnAirResponsiveMainContent--wide-mode { top: 68px !important; } '+
+            '.com-tv-TVScreen__sidebar-container { padding-top: 0; } '+
             '</style>';
 
         if(!header_right.querySelector('.cms_sw')){
@@ -586,3 +591,20 @@ function cm_pannel(){
             }, 200); }}
 
 } // cm_pannel()
+
+
+
+
+function upper_margin(){
+    window.addEventListener('resize', function(){
+        ck_width(); });
+
+    function ck_width(){
+        let top_s=document.querySelector('.top_style');
+        if(top_s){
+            if(screen.width==window.outerWidth){
+                top_s.disabled=true; }
+            else{
+                top_s.disabled=false; }}}
+
+} // upper_margin()
