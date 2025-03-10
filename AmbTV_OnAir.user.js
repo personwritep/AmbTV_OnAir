@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        2.5
+// @version        2.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -123,7 +123,6 @@ function player_vol(TP){
     check_cookie();
     cm_setting();
     channel_setting();
-    upper_margin();
 
 } // player_vol()
 
@@ -304,6 +303,7 @@ function channel_setting(){
             '.cha_sw span { display: inline-block; } '+
             '.cms_sw:hover, .cha_sw:hover { background: #373737; } '+
             '</style>'+
+
             '<style>'+
             'html { scrollbar-width: none; } '+
             '.com-tv-TVScreen__sidebar-container-overlay { background: none; } '+
@@ -338,6 +338,7 @@ function channel_setting(){
             'position: absolute; bottom: -62px; right: 168px; z-index: 1; } '+
             '.com-a-Button--dark { background: none !important; } '+
             '</style>'+
+
             '<style class="cha_style">'+
             '.com-shared-shedule_group-ScheduleGroupContentList { '+
             'flex-direction: row; flex-wrap: wrap; justify-content: flex-start; } '+
@@ -351,8 +352,14 @@ function channel_setting(){
             '@media screen and (min-width: 980px){ '+
             '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents { '+
             'width: 924px; }} '+
+            //         '@media screen and (min-width: 1200px){ '+
+            //         '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents { '+
+            //         'width: 1144px; }} '+
             '</style>'+
+
             '<style class="oa_clear_style">'+
+            '.com-tv-NowOnAirPlayerSectionLayout__player-area { height: 100vh; } '+
+            '.com-tv-TVScreen { height: 100vh; } '+
             '.c-common-HeaderContainer-header { opacity: 0 !important; visibility: hidden !important; } '+
             '.c-application-SideNavigation { display: none; } '+
             '.com-tv-TVScreen__NowOnAirController-overlay, '+
@@ -363,10 +370,6 @@ function channel_setting(){
             '.com-tv-NowOnAirRecommendedContentsContainerView__player { margin: 0; } '+
             '.com-tv-NowOnAirRecommendedContentsContainerView__details { display: none; } '+
             //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
-            '</style>'+
-            '<style class="top_style">'+
-            '.com-tv-NowOnAirResponsiveMainContent--wide-mode { top: 68px !important; } '+
-            '.com-tv-TVScreen__sidebar-container { padding-top: 0; } '+
             '</style>';
 
         if(!header_right.querySelector('.cms_sw')){
@@ -423,7 +426,36 @@ function channel_setting(){
                 if(!amboa){
                     cm_pannel(); }
                 else{
-                    amboa.remove(); }}}}
+                    amboa.remove(); }}}
+
+    } // if(header_right)
+
+
+
+    setTimeout(()=>{
+        let SG_panel=document.querySelector(
+            '.com-shared-shedule_group-ScheduleGroupContentsPlayerSidePanel__contents');
+        if(SG_panel){
+            SG_panel.oncontextmenu=function(){
+                set_clear(); }
+
+            let th_img=document.querySelectorAll(
+                '.com-shared-shedule_group-ScheduleGroupContentList .com-m-Thumbnail__image');
+            for(let k=0; k<th_img.length; k++){
+                th_img[k].oncontextmenu=function(event){
+                    event.stopPropagation();
+                    set_clear(); }}
+
+        }}, 800);
+
+
+    function set_clear(){
+        let clear_style=document.querySelector('.oa_clear_style');
+        if(clear_style){
+            if(!full_check()){
+                if(clear_style.disabled==true){
+                    clear_style.disabled=false; }}}} // set_clear()
+
 
 } // channel_setting()
 
@@ -591,20 +623,3 @@ function cm_pannel(){
             }, 200); }}
 
 } // cm_pannel()
-
-
-
-
-function upper_margin(){
-    window.addEventListener('resize', function(){
-        ck_width(); });
-
-    function ck_width(){
-        let top_s=document.querySelector('.top_style');
-        if(top_s){
-            if(screen.width==window.outerWidth){
-                top_s.disabled=true; }
-            else{
-                top_s.disabled=false; }}}
-
-} // upper_margin()
