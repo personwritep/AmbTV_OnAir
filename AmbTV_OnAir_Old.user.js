@@ -8,8 +8,8 @@
 // @icon        https://www.google.com/s2/favicons?sz=64&domain=abema.tv
 // @noframes
 // @grant        none
-// @updateURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_OnAir.user.js
-// @downloadURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_OnAir.user.js
+// @updateURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_OnAir_Old.user.js
+// @downloadURL        https://github.com/personwritep/AmbTV_OnAir/raw/main/AmbTV_OnAir_Old.user.js
 // ==/UserScript==
 
 
