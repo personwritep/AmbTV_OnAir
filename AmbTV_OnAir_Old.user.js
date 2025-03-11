@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        AmbTV OnAir
+// @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
 // @version        2.3
 // @description        AbemaTV ユーティリティ
