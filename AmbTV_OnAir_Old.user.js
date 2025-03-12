@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
-// @version        2.3
+// @version        2.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -39,6 +39,12 @@ function tv_player_env(){
 
 
     history_content();
+
+
+    setTimeout(()=>{
+        slow();
+    }, 200);
+
 
 } // tv_player_env()
 
@@ -503,14 +509,29 @@ function channel_setting(){
             '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__title, '+
             '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__broadcasting-date { '+
             'color: #000 !important; } '+
+            '.com-tv-LinearChannelList--shrunk { width: 422px; } '+
+            '.com-tv-LinearChannelListItem--shrunk { padding: 0 6px !important; } '+
+            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__logo--shrunk { '+
+            'filter: invert(1); height: 24px; } '+
             '</style>'+
             '<style class="cha_style">'+
-            '.com-tv-LinearChannelList { width: 958px; } '+
             '.com-tv-LinearChannelList:before { height: 90px !important; } '+
             '.com-tv-LinearChannelList:after { height: 75px !important; } '+
             '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row !important; '+
             'justify-content: flex-start !important; padding: 15px 0 9px 15px; background: #b0bec5; } '+
             '.com-tv-LinearChannelListItem { padding: 0 10px !important; } '+
+            '.c-application-DesktopAppContainer__content { min-width: 436px; } '+
+            '@media screen and (max-width: 580px){ '+
+            '.com-tv-LinearChannelList { width: 370px; } '+
+            '.com-tv-LinearChannelList__inner { padding: 15px 0 9px 0; }} '+
+            '@media screen and (max-width: 640px){ '+
+            '.c-application-SideNavigation { display: none; }} '+
+            '@media screen and (min-width: 580px){ '+
+            '.com-tv-LinearChannelList { width: 494px; }} '+
+            '@media screen and (min-width: 860px){ '+
+            '.com-tv-LinearChannelList { width: 726px; }} '+
+            '@media screen and (min-width: 1080px){ '+
+            '.com-tv-LinearChannelList { width: 958px; }} '+
             '</style>'+
             '<style class="oa_clear_style">'+
             '.c-common-HeaderContainer-header { opacity: 0 !important; visibility: hidden !important; } '+
@@ -605,3 +626,27 @@ function history_content(){
     }, 800);
 
 } // history_content()
+
+
+
+
+function slow(){
+    let CLR=document.querySelector('.com-home-ChannelListReorderButton');
+    if(CLR){
+        CLR.onclick=()=>{
+            let style=
+                '<style class="slow">'+
+                '.com-home-ChannelListReorderModalContainerView__inner { padding: 10px 32px; } '+
+                '.com-home-ChannelListReorderModalContainerView-heading { display: none; } '+
+                '.com-home-ChannelListReorderModalContainerView__scroll-area-container { '+
+                'margin-top: 0; overflow-y: scroll; scroll-behavior: smooth; } '+
+                '.com-home-ChannelListReorderModalContainerView__scroll-area { overflow-y: unset; } '+
+                '.com-home-ChannelListReorderModalContainerView__scroll-area-container:after { '+
+                'content: none; } '+
+                '</style>';
+
+            if(!document.querySelector('.slow')){
+                document.body.insertAdjacentHTML('beforeend', style); }
+        }}
+
+} // slow()
