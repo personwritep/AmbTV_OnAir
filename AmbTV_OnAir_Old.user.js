@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
-// @version        2.5
+// @version        2.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -500,47 +500,44 @@ function channel_setting(){
             '</style>'+
 
             '<style>'+
-            '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
-            '.com-tv-LinearChannelListItem { padding: 0 !important; } '+
-            '.com-tv-LinearChannelListItem__outer { border-radius: 5px; } '+
-            '.com-tv-LinearChannelListItem__inner { background-color: #000; padding: 1px; } '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__inner { '+
-            'background: #fff !important; } '+
-            '.com-tv-LinearChannelListItem__thumbnail { '+
-            'height: 58px !important; width: 103px !important; } '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__title, '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__broadcasting-date { '+
-            'color: #000 !important; } '+
-            '.com-tv-LinearChannelList--shrunk { width: 422px; } '+
-            '.com-tv-LinearChannelListItem--shrunk { padding: 0 6px !important; } '+
-            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__logo--shrunk { '+
-            'filter: invert(1); height: 24px; } '+
-
             '.com-application-Header { background: #00000050; } '+
             '.c-application-SideNavigation__wrapper'+
             '.c-application-SideNavigation__wrapper--collapsed { background: #00000040; } '+
             '.com-application-SideNavigationAccountItem { background: none; } '+
             '.com-tv-LinearFooter { height: 58px; background: #00000050; } '+
+
+            '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
+            '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row; '+
+            'justify-content: flex-start; padding: 6px 0 0 4px; background: #b0bec5; } '+
+            '.com-tv-LinearChannelListItem { padding: 0 2px; line-height: 0; } '+
+            '.com-tv-LinearChannelListItem__outer { border-radius: 5px; } '+
+            '.com-tv-LinearChannelListItem__inner { background-color: #000; padding: 1px; } '+
+            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__inner { '+
+            'background: #fff; } '+
+            '.com-tv-LinearChannelListItem__thumbnail { '+
+            'height: 57.5px !important; width: 103px !important; } '+
+            '.com-tv-LinearChannelListItem--active .com-tv-LinearChannelListItem__title, '+
+            '.com-tv-LinearChannelListItem--active '+
+            '.com-tv-LinearChannelListItem__broadcasting-date { color: #000; } '+
+
+            '.c-application-DesktopAppContainer__content { min-width: 436px; } '+
+            '.com-tv-LinearChannelList--shrunk { width: 288px !important; } '+
+            '@media screen and (min-width: 500px){ '+
+            '.com-tv-LinearChannelList { width: 225px; }} '+
+            '.com-tv-LinearChannelListItem--active '+
+            '.com-tv-LinearChannelListItem__logo--shrunk { '+
+            'filter: invert(1); height: 24px; } '+
             '</style>'+
 
             '<style class="cha_style">'+
             '.com-tv-LinearChannelList:before { height: 90px !important; } '+
             '.com-tv-LinearChannelList:after { height: 75px !important; } '+
-            '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row !important; '+
-            'justify-content: flex-start !important; padding: 15px 0 9px 15px; background: #b0bec5; } '+
-            '.com-tv-LinearChannelListItem { padding: 0 10px !important; } '+
-            '.c-application-DesktopAppContainer__content { min-width: 436px; } '+
-            '@media screen and (max-width: 580px){ '+
-            '.com-tv-LinearChannelList { width: 370px; } '+
-            '.com-tv-LinearChannelList__inner { padding: 15px 0 9px 0; }} '+
-            '@media screen and (max-width: 640px){ '+
-            '.c-application-SideNavigation { display: none; }} '+
-            '@media screen and (min-width: 580px){ '+
-            '.com-tv-LinearChannelList { width: 494px; }} '+
+            '@media screen and (min-width: 640px){ '+
+            '.com-tv-LinearChannelList { width: 442px; }} '+
             '@media screen and (min-width: 860px){ '+
-            '.com-tv-LinearChannelList { width: 726px; }} '+
+            '.com-tv-LinearChannelList { width: 659px; }} '+
             '@media screen and (min-width: 1080px){ '+
-            '.com-tv-LinearChannelList { width: 958px; }} '+
+            '.com-tv-LinearChannelList { width: 876px; }} '+
             '</style>'+
 
             '<style class="oa_clear_style">'+
