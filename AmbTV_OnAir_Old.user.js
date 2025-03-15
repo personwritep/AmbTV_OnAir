@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
-// @version        2.6
+// @version        2.7
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -158,8 +158,9 @@ function player_vol(TP){
 
 
     check_cookie();
-    channel_setting();
     cm_setting();
+    channel_setting();
+    ex_view();
 
 } // player_vol(TP)
 
@@ -285,17 +286,14 @@ function cm_setting(){
 
 
         TVS.onclick=function(event){
-            if(event.ctrlKey){
-                cm_pannel(); }
-            else{
-                let button=document.querySelector(
-                    '.com-tv-TVController__volume .com-playback-Volume__icon-button');
-                if(button && protect==0){
-                    let label=button.getAttribute('aria-label');
-                    if(label=='音声をオフにする'){
-                        v_vol(0); }
-                    else{
-                        v_vol(1); }}}}
+            let button=document.querySelector(
+                '.com-tv-TVController__volume .com-playback-Volume__icon-button');
+            if(button && protect==0){
+                let label=button.getAttribute('aria-label');
+                if(label=='音声をオフにする'){
+                    v_vol(0); }
+                else{
+                    v_vol(1); }}}
     } // if(TVS)
 
 
@@ -505,6 +503,7 @@ function channel_setting(){
             '.c-application-SideNavigation__wrapper--collapsed { background: #00000040; } '+
             '.com-application-SideNavigationAccountItem { background: none; } '+
             '.com-tv-LinearFooter { height: 58px; background: #00000050; } '+
+            '.com-tv-TVScreen__player { background-color: #000; } '+
 
             '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
             '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row; '+
@@ -547,6 +546,11 @@ function channel_setting(){
             '.com-tv-TVScreen__footer-container { '+
             'transform: translateY(0) !important; visibility: hidden !important; } '+
             //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
+            '</style>'+
+
+            '<style class="ex_view_style">'+
+            '.com-tv-TVScreen__player { height: 100vh !important; } '+
+            '.com-tv-TVController__fullscreen-button { color: red; } '+
             '</style>';
 
         if(!header_right.querySelector('.cms_sw')){
@@ -555,6 +559,10 @@ function channel_setting(){
         let clear_style=document.querySelector('.oa_clear_style');
         if(clear_style){
             clear_style.disabled=true; }
+
+        let ex_view_style=document.querySelector('.ex_view_style');
+        if(ex_view_style){
+            ex_view_style.disabled=true; }
 
 
         let cha_style=document.querySelector('.cha_style');
@@ -600,6 +608,25 @@ function channel_setting(){
                     amboa.remove(); }}}}
 
 } // channel_setting()
+
+
+
+
+function ex_view(){
+    let ex_view_style=document.querySelector('.ex_view_style');
+    let fs_b=document.querySelector('.com-tv-TVController__fullscreen-button');
+    if(ex_view_style && fs_b){
+        fs_b.onclick=function(event){
+            if(event.ctrlKey){
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                if(ex_view_style.disabled==true){
+                    ex_view_style.disabled=false; }
+                else{
+                    ex_view_style.disabled=true; }}}}
+
+} // ex_view()
+
 
 
 
