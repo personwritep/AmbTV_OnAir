@@ -539,6 +539,7 @@ function channel_setting(){
             '.com-tv-TVScreen__player { background-color: #000; } '+
             '.com-tv-LinearFooter { height: 124px; background: none; } '+
             '.com-tv-LinearFooter__bottom-block { background: #00000040; } '+
+            '.com-tv-TVController button { outline: none; } '+
 
             '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
             '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row; '+
