@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
-// @version        2.7
+// @version        2.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -277,12 +277,14 @@ function cm_setting(){
         monitor4.observe(TVS, { childList: true });
 
         function safe(){
-            let button1=TVS.querySelector('.com-tv-TVController button');
-            if(button1){
-                button1.addEventListener('mouseenter', function(){
-                    protect=1; });
-                button1.addEventListener('mouseleave', function(){
-                    protect=0; }); }}
+            let buttons=TVS.querySelectorAll('.com-tv-TVController button');
+            for(let k=0; k<buttons.length; k++){
+                buttons[k].addEventListener('mouseenter', function(){
+                    sp(1); });
+                buttons[k].addEventListener('mouseleave', function(){
+                    sp(0); }); }
+            function sp(n){
+                protect=n; }}
 
 
         TVS.onclick=function(event){
@@ -294,24 +296,55 @@ function cm_setting(){
                     v_vol(0); }
                 else{
                     v_vol(1); }}}
+
+
+        window.addEventListener('resize', function(){
+            setTimeout(()=>{
+                ti_view();
+            }, 100); });
+
+        function ti_view(){
+            let tooltip=document.querySelectorAll('.com-a-Tooltip.com-a-Tooltip--arrow-position-center');
+            for(let k=0; k<tooltip.length; k++){
+                if(not_fullscreen()){
+                    tooltip[k].textContent='フルスクリーン(F11)'; }
+                else{
+                    tooltip[k].textContent='ブラウザ表示(F11)'; }}
+
+            let icon_svg=document.querySelectorAll('.com-tv-TVController__fullscreen-icon svg');
+            for(let k=0; k<icon_svg.length; k++){
+                if(not_fullscreen()){
+                    icon_svg[k].innerHTML=
+                        '<use xlink:href="/assets/images/icons/player/fullscreen.svg?'+
+                        'v=c903638372bf698151eb#svg-body"></use>'; }
+                else{
+                    icon_svg[k].innerHTML=
+                        '<use xlink:href="/assets/images/icons/player/fullscreen_exit.svg?'+
+                        'v=765f7ba3308158737dbc#svg-body"></use>'; }}
+
+        } // ti_view()
+
     } // if(TVS)
 
 
     let NOAC=document.querySelector('.c-tv-NowOnAirContainer');
     let clear_style=document.querySelector('.oa_clear_style');
-    if(NOAC && clear_style){
+    let disp_style=document.querySelector('.oa_disp_style');
+    if(NOAC && clear_style && disp_style){
         NOAC.oncontextmenu=function(event){
             if(!event.ctrlKey || !event.shiftKey){
-                if(!full_check()){
-                    if(clear_style.disabled==true){
-                        clear_style.disabled=false; }
-                    else{
-                        clear_style.disabled=true; }}}}
+                if(clear_style.disabled==true){
+                    disp_style.disabled=true;
+                    clear_style.disabled=false; }
+                else{
+                    disp_style.disabled=false;
+                    clear_style.disabled=true; }}}
 
         document.addEventListener('keydown', function(event){
             if(event.keyCode=='27'){
                 if(clear_style.disabled==false){
                     clear_style.disabled=true; }}});
+
     } // if(NOAC && clear_style)
 
 } // cm_setting()
@@ -498,12 +531,14 @@ function channel_setting(){
             '</style>'+
 
             '<style>'+
-            '.com-application-Header { background: #00000050; } '+
+            '.com-application-Header { background: #00000040; } '+
             '.c-application-SideNavigation__wrapper'+
-            '.c-application-SideNavigation__wrapper--collapsed { background: #00000040; } '+
-            '.com-application-SideNavigationAccountItem { background: none; } '+
-            '.com-tv-LinearFooter { height: 58px; background: #00000050; } '+
+            '.c-application-SideNavigation__wrapper--collapsed { background: none; } '+
+            '.com-application-SideNavigationMainList { background: #00000040; } '+
+            '.com-application-SideNavigationAccountItem { background: #00000040; } '+
             '.com-tv-TVScreen__player { background-color: #000; } '+
+            '.com-tv-LinearFooter { height: 124px; background: none; } '+
+            '.com-tv-LinearFooter__bottom-block { background: #00000040; } '+
 
             '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
             '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row; '+
@@ -530,7 +565,7 @@ function channel_setting(){
 
             '<style class="cha_style">'+
             '.com-tv-LinearChannelList:before { height: 90px !important; } '+
-            '.com-tv-LinearChannelList:after { height: 75px !important; } '+
+            '.com-tv-LinearChannelList:after { height: 120px !important; } '+
             '@media screen and (min-width: 640px){ '+
             '.com-tv-LinearChannelList { width: 442px; }} '+
             '@media screen and (min-width: 860px){ '+
@@ -540,12 +575,20 @@ function channel_setting(){
             '</style>'+
 
             '<style class="oa_clear_style">'+
-            '.c-common-HeaderContainer-header { opacity: 0 !important; visibility: hidden !important; } '+
+            '.c-common-HeaderContainer-header { opacity: 0; visibility: hidden; } '+
             '.c-application-SideNavigation { display: none; } '+
             '.c-tv-NowOnAirContainer__remote-controller { display: none; } '+
             '.com-tv-TVScreen__footer-container { '+
-            'transform: translateY(0) !important; visibility: hidden !important; } '+
+            'transform: translateY(0); visibility: hidden; transition: padding-left 0s; } '+
             //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
+            '</style>'+
+
+            '<style class="oa_disp_style">'+
+            '.c-common-HeaderContainer-header { opacity: 1; visibility: visible; } '+
+            '.c-application-SideNavigation { display: flex; opacity: 1; visibility: visible;} '+
+            '.c-tv-NowOnAirContainer__remote-controller { display: block; } '+
+            '.com-tv-TVScreen__footer-container { transition: padding-left 0s; '+
+            'transform: translateY(0); visibility: visible; padding-left: 64px; } '+
             '</style>'+
 
             '<style class="ex_view_style">'+
@@ -559,6 +602,10 @@ function channel_setting(){
         let clear_style=document.querySelector('.oa_clear_style');
         if(clear_style){
             clear_style.disabled=true; }
+
+        let disp_style=document.querySelector('.oa_disp_style');
+        if(disp_style){
+            disp_style.disabled=true; }
 
         let ex_view_style=document.querySelector('.ex_view_style');
         if(ex_view_style){
@@ -611,22 +658,41 @@ function channel_setting(){
 
 
 
-
 function ex_view(){
     let ex_view_style=document.querySelector('.ex_view_style');
     let fs_b=document.querySelector('.com-tv-TVController__fullscreen-button');
     if(ex_view_style && fs_b){
         fs_b.onclick=function(event){
+            event.preventDefault();
+            event.stopImmediatePropagation();
             if(event.ctrlKey){
-                event.preventDefault();
-                event.stopImmediatePropagation();
                 if(ex_view_style.disabled==true){
                     ex_view_style.disabled=false; }
                 else{
-                    ex_view_style.disabled=true; }}}}
+                    ex_view_style.disabled=true; }}
+            else{
+                full(); }}}
+
+
+    function full(){
+        if(not_fullscreen()){
+            if(document.documentElement.webkitRequestFullscreen){
+                document.documentElement.webkitRequestFullscreen(); }
+            else if(document.documentElement.requestFullscreen){
+                document.documentElement.requestFullscreen(); }
+        }
+        else{
+            document.exitFullscreen(); }}
 
 } // ex_view()
 
+
+
+function not_fullscreen(){
+    if(window.screen.height-(window.innerHeight)*(window.devicePixelRatio)<50 ){
+        return false; }
+    else{
+        return true; }}
 
 
 
@@ -660,7 +726,6 @@ function history_content(){
     }, 800);
 
 } // history_content()
-
 
 
 
