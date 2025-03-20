@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
-// @version        2.8
+// @version        2.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -297,34 +297,38 @@ function cm_setting(){
                 else{
                     v_vol(1); }}}
 
-
-        window.addEventListener('resize', function(){
-            setTimeout(()=>{
-                ti_view();
-            }, 100); });
-
-        function ti_view(){
-            let tooltip=document.querySelectorAll('.com-a-Tooltip.com-a-Tooltip--arrow-position-center');
-            for(let k=0; k<tooltip.length; k++){
-                if(not_fullscreen()){
-                    tooltip[k].textContent='フルスクリーン(F11)'; }
-                else{
-                    tooltip[k].textContent='ブラウザ表示(F11)'; }}
-
-            let icon_svg=document.querySelectorAll('.com-tv-TVController__fullscreen-icon svg');
-            for(let k=0; k<icon_svg.length; k++){
-                if(not_fullscreen()){
-                    icon_svg[k].innerHTML=
-                        '<use xlink:href="/assets/images/icons/player/fullscreen.svg?'+
-                        'v=c903638372bf698151eb#svg-body"></use>'; }
-                else{
-                    icon_svg[k].innerHTML=
-                        '<use xlink:href="/assets/images/icons/player/fullscreen_exit.svg?'+
-                        'v=765f7ba3308158737dbc#svg-body"></use>'; }}
-
-        } // ti_view()
-
     } // if(TVS)
+
+
+
+    ti_view();
+
+    window.addEventListener('resize', function(){
+        setTimeout(()=>{
+            ti_view();
+        }, 100); });
+
+    function ti_view(){
+        let tooltip=document.querySelectorAll('.com-tv-TVController__fullscreen .com-a-Tooltip');
+        for(let k=0; k<tooltip.length; k++){
+            if(not_fullscreen()){
+                tooltip[k].textContent='フルスクリーン(F11)'; }
+            else{
+                tooltip[k].textContent='ブラウザ表示(F11)'; }}
+
+        let icon_svg=document.querySelectorAll('.com-tv-TVController__fullscreen-icon svg');
+        for(let k=0; k<icon_svg.length; k++){
+            if(not_fullscreen()){
+                icon_svg[k].innerHTML=
+                    '<use xlink:href="/assets/images/icons/player/fullscreen.svg?'+
+                    'v=c903638372bf698151eb#svg-body"></use>'; }
+            else{
+                icon_svg[k].innerHTML=
+                    '<use xlink:href="/assets/images/icons/player/fullscreen_exit.svg?'+
+                    'v=765f7ba3308158737dbc#svg-body"></use>'; }}
+
+    } // ti_view()
+
 
 
     let NOAC=document.querySelector('.c-tv-NowOnAirContainer');
