@@ -523,7 +523,7 @@ function channel_setting(){
     if(header_right){
         let sw=
             '<div class="cms_sw">CM Mute</div>'+
-            '<div class="cha_sw">Channel</div>'+
+            '<div class="cha_sw">Channel <span>▢</span></div>'+
             '<style>'+
             '.com-application-Header__right { display: flex; flex-basis: 440px !important; } '+
             '.cms_sw, .cha_sw { font: 14px Meiryo; align-self: center; cursor: pointer; '+
@@ -531,6 +531,7 @@ function channel_setting(){
             'border: 1px solid #333; border-radius: 4px; background: #212121; } '+
             '.cms_sw { margin-right: 20px; } '+
             '.cha_sw { margin-right: 30px; } '+
+            '.cha_sw span { display: inline-block; } '+
             '.cms_sw:hover, .cha_sw:hover { background: #373737; } '+
             '</style>'+
 
@@ -544,6 +545,7 @@ function channel_setting(){
             '.com-tv-LinearFooter { height: 124px; background: none; } '+
             '.com-tv-LinearFooter__bottom-block { background: #00000040; } '+
             '.com-tv-TVController button { outline: none; } '+
+            '.com-a-Slider__highlighter { background-color: #2196f3; } '+
 
             '.com-tv-LinearChannelList { scrollbar-width: none; margin-right: 8px; } '+
             '.com-tv-LinearChannelList__inner { flex-wrap: wrap; flex-direction: row; '+
@@ -624,30 +626,44 @@ function channel_setting(){
             if(oa_channel!='1'){
                 oa_channel='0';
                 document.cookie='oa_channel=0; path=/; Max-Age=2592000';
+                sw_view(0);
                 cha_style.disabled=true; }
             else{
                 oa_channel='1';
                 document.cookie='oa_channel=1; path=/; Max-Age=2592000';
+                sw_view(1);
                 cha_style.disabled=false; }
 
             cha_sw.onclick=function(){
                 if(oa_channel=='0'){
                     oa_channel='1'
                     document.cookie='oa_channel=1; path=/; Max-Age=2592000';
+                    sw_view(1);
                     cha_style.disabled=false; }
                 else{
                     oa_channel='0';
                     document.cookie='oa_channel=0; path=/; Max-Age=2592000';
+                    sw_view(0);
                     cha_style.disabled=true; }
-                cha_check(); }}
+                cha_check(); }
 
+            function sw_view(n){
+                let swsp=cha_sw.querySelector('span');
+                if(swsp){
+                    if(n==0){
+                        swsp.style.transform='scaleX(0.5)'; }
+                    else{
+                        swsp.style.transform='scaleX(1)'; }}}
 
-        function cha_check(){
-            let swicher=document.querySelector('.com-tv-LinearChannelSwitcher button');
-            if(swicher){
-                if(document.createEvent){
-                    let evt=new Event('mouseover', { bubbles: true, cancelable: false });
-                    swicher.dispatchEvent(evt); }}}
+            function cha_check(){
+                let swicher=document.querySelector('.com-tv-LinearChannelSwitcher button');
+                if(swicher){
+                    if(document.createEvent){
+                        let evt=new Event('mouseover', { bubbles: true, cancelable: false });
+                        swicher.dispatchEvent(evt); }}}
+
+        } // if(cha_style && cha_sw)
+
 
 
         let cms_sw=document.querySelector('.cms_sw');
