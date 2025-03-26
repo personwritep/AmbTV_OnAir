@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir Old
 // @namespace        http://tampermonkey.net/
-// @version        2.9
+// @version        3.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -529,14 +529,18 @@ function channel_setting(){
             '.cms_sw, .cha_sw { font: 14px Meiryo; align-self: center; cursor: pointer; '+
             'padding: 12px 6px 0; height: 46px; white-space: nowrap; color: #fff; '+
             'border: 1px solid #333; border-radius: 4px; background: #212121; } '+
-            '.cms_sw { margin-right: 20px; } '+
-            '.cha_sw { margin-right: 30px; } '+
+            '.cms_sw { margin-right: 20px; display: none; } '+
+            '.cha_sw { margin-right: 30px; display: none; } '+
             '.cha_sw span { display: inline-block; } '+
             '.cms_sw:hover, .cha_sw:hover { background: #373737; } '+
             '</style>'+
 
-            '<style>'+
+            '<style class="header_style">'+
             '.com-application-Header { background: #00000040; } '+
+            '.cms_sw, .cha_sw { display: block; } '+
+            '</style>'+
+
+            '<style>'+
             '.c-application-SideNavigation__wrapper'+
             '.c-application-SideNavigation__wrapper--collapsed { background: none; } '+
             '.com-application-SideNavigationMainList { background: #00000040; } '+
@@ -587,7 +591,7 @@ function channel_setting(){
             '.c-tv-NowOnAirContainer__remote-controller { display: none; } '+
             '.com-tv-TVScreen__footer-container { '+
             'transform: translateY(0); visibility: hidden; transition: padding-left 0s; } '+
-            //         'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
+            //        'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
             '</style>'+
 
             '<style class="oa_disp_style">'+
@@ -720,8 +724,11 @@ function not_fullscreen(){
 function history_content(){
     let lastpath=sessionStorage.getItem('ATV_OA');
     if(location.pathname.startsWith('/now-on-air/')){
+        header_view(1);
         lastpath=location.pathname;
         sessionStorage.setItem('ATV_OA', lastpath); }
+    else{
+        header_view(0); }
 
     let CCP=document.querySelectorAll('.com-home-ChannelCardLinksPanel__item');
     if(CCP.length>0){
@@ -745,6 +752,15 @@ function history_content(){
                     but.style.outline='2px solid #2196f3';
                     but.style.borderRadius='2px'; }}}
     }, 800);
+
+
+    function header_view(n){
+        let header_style=document.querySelector('.header_style');
+        if(header_style){
+            if(n==0){
+                header_style.disabled=true; }
+            else{
+                header_style.disabled=false; }}}
 
 } // history_content()
 
