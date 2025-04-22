@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.0
+// @version        3.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -17,6 +17,7 @@ let oa_mute;
 let oa_size;
 let oa_opac;
 let oa_channel;
+let muted=0; // ミュート状態のフラグ
 
 
 let target=document.querySelector('head > title');
@@ -177,62 +178,64 @@ function full_check(){
 
 function v_vol(n){ // 0: ミュート　1: 通常
     oa_mute=get_cookie('oa_mute');
-    let button=document.querySelector(
-        '.com-tv-TVController__volume .com-playback-Volume__icon-button');
-    if(button){
-        if(full_check()){ // フルスクリーン表示の場合
-            let label=button.getAttribute('aria-label');
-            if(n==0 && label=='音声をオフにする'){
-                if(oa_mute==0){
-                    button.click();
-                    view(0); }}
-            else if(n==1 && label=='音声をオンにする'){
-                button.click();
-                view(1); }}
-        else{
-            let label=button.getAttribute('aria-label');
-            if(n==0 && label=='音声をオフにする'){
-                if(oa_mute==0){
-                    button.click(); }}
-            else if(n==1 && label=='音声をオンにする'){
-                button.click(); }
 
-            setTimeout(()=>{
-                let label_=button.getAttribute('aria-label');
-                if(label_=='音声をオフにする'){ // 音声ON
-                    view(1); }
+    if(full_check()){ // フルスクリーン表示の場合
+        if(n==0){
+            if(oa_mute==0){
+                vol_mute(0);
+                view(0); }}
+        else if(n==1){
+            vol_mute(1);
+            view(1); }}
+    else{
+        if(n==0){
+            if(oa_mute==0){
+                vol_mute(0); }}
+        else if(n==1){
+            vol_mute(1); }
+
+        setTimeout(()=>{
+            if(muted==0){
+                view(1); }
+            else{
+                view(0); }
+        }, 40); }
+
+
+    function vol_mute(n){ // 0: ミュート  1: 通常
+        let video=document.querySelector('.com-a-Video__video video[src]');
+        if(video){
+            if(n==0){
+                muted=1;
+                video.volume=0; }
+            else{
+                muted=0;
+                video.volume=1; }}}
+
+
+    function view(n){ // 0: ミュート  1: 通常
+        oa_opac=get_cookie('oa_opac');
+        oa_size=get_cookie('oa_size');
+        let TVS=document.querySelector('.com-tv-TVScreen__player');
+        if(TVS){
+            if(n==0){
+                TVS.style.transition='opacity .5s, transform .5s';
+                if(oa_opac==0){
+                    TVS.style.opacity='0.5'; }
+                else if(oa_opac==1){
+                    TVS.style.opacity='0'; }
                 else{
-                    view(0); }
-            }, 40); }
-    } // button
+                    TVS.style.opacity=''; }
+                if(oa_size==0){
+                    TVS.style.transform='scale(0.5)'; }
+                else{
+                    TVS.style.transform=''; }}
+            else{
+                TVS.style.transition='';
+                TVS.style.opacity='';
+                TVS.style.transform=''; }}}
 
 } // v_vol()
-
-
-
-function view(n){ // 0: ミュート  1: 通常
-    oa_opac=get_cookie('oa_opac');
-    oa_size=get_cookie('oa_size');
-    let TVS=document.querySelector('.com-tv-TVScreen__player');
-    if(TVS){
-        if(n==0){
-            TVS.style.transition='opacity .5s, transform .5s';
-            if(oa_opac==0){
-                TVS.style.opacity='0.5'; }
-            else if(oa_opac==1){
-                TVS.style.opacity='0'; }
-            else{
-                TVS.style.opacity=''; }
-            if(oa_size==0){
-                TVS.style.transform='scale(0.5)'; }
-            else{
-                TVS.style.transform=''; }}
-        else{
-            TVS.style.transition='';
-            TVS.style.opacity='';
-            TVS.style.transform=''; }}
-
-} //  view()
 
 
 
@@ -269,7 +272,7 @@ function check_cookie(){
 
 
 function cm_setting(){
-    let protect=0; //「ブラウザ表示」のボタンによる手動ミュート適用を防ぐ
+    let protect=0; //「ブラウザ表示」のボタンによる手動ミュート適用防止
 
     let TVS=document.querySelector('.com-tv-TVScreen__player');
     if(TVS){
@@ -288,11 +291,8 @@ function cm_setting(){
 
 
         TVS.onclick=function(event){
-            let button=document.querySelector(
-                '.com-tv-TVController__volume .com-playback-Volume__icon-button');
-            if(button && protect==0){
-                let label=button.getAttribute('aria-label');
-                if(label=='音声をオフにする'){
+            if(protect==0){
+                if(muted==0){
                     v_vol(0); }
                 else{
                     v_vol(1); }}}
