@@ -18,7 +18,7 @@ let oa_vol;
 let oa_size;
 let oa_opac;
 let oa_channel;
-let muted=0; // ミュート状態のフラグ
+let muted=1; // ミュート状態のフラグ 0:ミュート 1:通常
 
 
 let target=document.querySelector('head > title');
@@ -62,15 +62,10 @@ function player_vol(TP){
         let LF=document.querySelector('.com-tv-LinearFooter__feed-super');
         if(TP.querySelector('.com-tv-TVScreen__eyecatch')){
             if(LF.textContent){
-                v_vol(1); }}
+                mute_act(1); }}
         else{
             if(!LF.textContent){
-                v_vol(0);
-                if(full_check()){
-                    monitor1.disconnect();
-                    setTimeout(()=>{
-                        monitor1.observe( TP, { childList: true });
-                    }, 8000); }}}
+                mute_act(0); }}
 
     } // con_vol()
 
@@ -84,7 +79,7 @@ function player_vol(TP){
 
     function con_vol2(){ // 動画タイトルによるミュート
         if(LF.textContent){
-            v_vol(1); }
+            mute_act(1); }
         else{
             setTimeout(()=>{
                 ad_check();
@@ -120,7 +115,7 @@ function player_vol(TP){
                         let data=imageData.data;
 
                         if(data[0]+data[1]+data[2]!=0){ // ADの場合
-                            v_vol(0);
+                            mute_act(0);
                             retry_s=16; }}}} // capture()
 
         } // cv_check()
@@ -138,7 +133,7 @@ function player_vol(TP){
             con_vol3();
 
             function con_vol3(){
-                v_vol(1);
+                mute_act(1);
                 con_vol2(); }}
     }, 200 );
 
@@ -168,52 +163,29 @@ function player_vol(TP){
 
 
 
-function full_check(){
-    let full_button=document.querySelector('.com-tv-TVController__fullscreen button');
-    if(full_button){
-        let label=full_button.getAttribute('aria-label');
-        if(label=='フルスクリーンを解除する'){
-            return true; }}}
-
-
-
-function v_vol(n){ // 0: ミュート　1: 通常
+function mute_act(n){ // 0: ミュート　1: 通常
     oa_mute=get_cookie('oa_mute');
 
-    if(full_check()){ // フルスクリーン表示の場合
-        if(n==0){
-            if(oa_mute==0){
-                vol_mute(0);
-                view(0); }}
-        else if(n==1){
-            vol_mute(1);
-            view(1); }}
+    if(n==0){
+        if(oa_mute==0){
+            muted=0;
+            sound(0);
+            view(0); }}
     else{
-        if(n==0){
-            if(oa_mute==0){
-                vol_mute(0); }}
-        else if(n==1){
-            vol_mute(1); }
-
-        setTimeout(()=>{
-            if(muted==0){
-                view(1); }
-            else{
-                view(0); }
-        }, 40); }
+        muted=1;
+        sound(1);
+        view(1); }
 
 
-    function vol_mute(n){ // 0: ミュート  1: 通常
+    function sound(n){ // 0: ミュート  1: 通常
         oa_vol=get_cookie('oa_vol');
         let vol_val=[0, 0.1, 0.2, 0.4, 0.6, 1]; // 音量のデフォルト「0」
 
         let video=document.querySelector('.com-a-Video__video video[src]');
         if(video){
             if(n==0){
-                muted=1;
                 video.volume=vol_val[oa_vol]; }
             else{
-                muted=0;
                 video.volume=1; }}}
 
 
@@ -234,7 +206,7 @@ function v_vol(n){ // 0: ミュート　1: 通常
                 TVS.style.opacity='';
                 TVS.style.transform=''; }}}
 
-} // v_vol()
+} // mute_act()
 
 
 
@@ -288,10 +260,10 @@ function cm_setting(){
 
         TVS.onclick=function(event){
             if(protect==0){
-                if(muted==0){
-                    v_vol(0); }
+                if(muted==1){
+                    mute_act(0); }
                 else{
-                    v_vol(1); }}}
+                    mute_act(1); }}}
 
     } // if(TVS)
 
@@ -487,7 +459,7 @@ function cm_pannel(){
         if(!LF.textContent){
             setTimeout(()=>{
                 oa_mute=get_cookie('oa_mute');
-                v_vol(oa_mute);
+                mute_act(oa_mute);
             }, 200); }}
 
 } // cm_pannel()
