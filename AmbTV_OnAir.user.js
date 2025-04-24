@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.1
+// @version        3.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -14,6 +14,7 @@
 
 
 let oa_mute;
+let oa_vol;
 let oa_size;
 let oa_opac;
 let oa_channel;
@@ -203,11 +204,14 @@ function v_vol(n){ // 0: ミュート　1: 通常
 
 
     function vol_mute(n){ // 0: ミュート  1: 通常
+        oa_vol=get_cookie('oa_vol');
+        let vol_val=[0, 0.1, 0.2, 0.4, 0.6, 1]; // 音量のデフォルト「0」
+
         let video=document.querySelector('.com-a-Video__video video[src]');
         if(video){
             if(n==0){
                 muted=1;
-                video.volume=0; }
+                video.volume=vol_val[oa_vol]; }
             else{
                 muted=0;
                 video.volume=1; }}}
@@ -215,21 +219,16 @@ function v_vol(n){ // 0: ミュート　1: 通常
 
     function view(n){ // 0: ミュート  1: 通常
         oa_opac=get_cookie('oa_opac');
+        let opac_val=[0.5, 0, 1]; // 明度のデフォルト「0.5」
         oa_size=get_cookie('oa_size');
+        let size_val=[0.5, 1]; // サイズのデフォルト「0.5」
+
         let TVS=document.querySelector('.com-tv-TVScreen__player');
         if(TVS){
             if(n==0){
                 TVS.style.transition='opacity .5s, transform .5s';
-                if(oa_opac==0){
-                    TVS.style.opacity='0.5'; }
-                else if(oa_opac==1){
-                    TVS.style.opacity='0'; }
-                else{
-                    TVS.style.opacity=''; }
-                if(oa_size==0){
-                    TVS.style.transform='scale(0.5)'; }
-                else{
-                    TVS.style.transform=''; }}
+                TVS.style.opacity=opac_val[oa_opac];
+                TVS.style.transform='scale('+ size_val[oa_size] +')'; }
             else{
                 TVS.style.transition='';
                 TVS.style.opacity='';
@@ -253,18 +252,15 @@ function get_cookie(name){
 
 function check_cookie(){
     oa_mute=get_cookie('oa_mute');
-    if(oa_mute!=1){
-        oa_mute=0; }
     document.cookie='oa_mute='+oa_mute+'; path=/; Max-Age=2592000';
 
+    oa_vol=get_cookie('oa_vol');
+    document.cookie='oa_vol='+oa_vol+'; path=/; Max-Age=2592000';
+
     oa_size=get_cookie('oa_size');
-    if(oa_size!=1){
-        oa_size=0; }
     document.cookie='oa_size='+oa_size+'; path=/; Max-Age=2592000';
 
     oa_opac=get_cookie('oa_opac');
-    if(oa_opac!=0 && oa_opac!=1 && oa_opac!=2){
-        oa_opac=0; }
     document.cookie='oa_opac='+oa_opac+'; path=/; Max-Age=2592000';
 
 } // check_cookie()
@@ -374,19 +370,28 @@ function cm_pannel(){
         help_SVG +'</a>　'+
         '<input type="button" id="oa_close" value="×"></div>'+
         '<div class="oa_p">ミュート機能の有効 / 無効</div>'+
-        '<div>　ミュート機能（音声）： '+
+        '<div>　ミュート機能： '+
         '<input name="mute" type="radio" id="m0">有効　'+
         '<input name="mute" type="radio" id="m1">無効'+
         '</div>'+
+        '<div class="oa_p">ミュート時の音量の設定</div>'+
+        '<div>　音量： '+
+        '<input name="volume" type="radio" id="v0" class="oa_cont">0　'+
+        '<input name="volume" type="radio" id="v1" class="oa_cont">1　'+
+        '<input name="volume" type="radio" id="v2" class="oa_cont">2　'+
+        '<input name="volume" type="radio" id="v3" class="oa_cont">4　'+
+        '<input name="volume" type="radio" id="v4" class="oa_cont">6　'+
+        '<input name="volume" type="radio" id="v5" class="oa_cont">10'+
+        '</div>'+
         '<div class="oa_p">ミュート時の画面の設定</div>'+
         '<div>　画面サイズ： '+
-        '<input name="size" type="radio" id="s0">縮小　'+
-        '<input name="size" type="radio" id="s1">通常'+
+        '<input name="size" type="radio" id="s0" class="oa_cont">縮小　'+
+        '<input name="size" type="radio" id="s1" class="oa_cont">通常'+
         '</div>'+
         '<div>　画面の明度： '+
-        '<input name="opacity" type="radio" id="o0">0%　'+
-        '<input name="opacity" type="radio" id="o1">50%　'+
-        '<input name="opacity" type="radio" id="o2">100%'+
+        '<input name="opacity" type="radio" id="o1" class="oa_cont">0%　'+
+        '<input name="opacity" type="radio" id="o0" class="oa_cont">50%　'+
+        '<input name="opacity" type="radio" id="o2" class="oa_cont">100%'+
         '</div>'+
 
         '<style>#amboa { position: fixed; top: 60px; left: calc(50% - 190px); '+
@@ -396,7 +401,7 @@ function cm_pannel(){
         'font-weight: bold; color: #fff; background: #2196f3; text-align: center; } '+
         '.oa_help { vertical-align: -5px; } '+
         '#oa_close { padding: 0 2px; height: 20px; line-height: 16px; } '+
-        '.oa_p { padding: 2px 8px 0; margin: 8px 0 4px; border: 1px solid #aaa; '+
+        '.oa_p { padding: 2px 8px 0; margin: 10px 0 6px; border: 1px solid #aaa; '+
         'line-height: 22px; } '+
         'input[type="radio"]{ margin: 0 .2em; }'+
         '</style>'+
@@ -409,91 +414,62 @@ function cm_pannel(){
 
     function set_radio(){
         oa_mute=get_cookie('oa_mute');
-        let m0=document.querySelector('#m0');
-        let m1=document.querySelector('#m1');
-        if(oa_mute==0){
-            m0.checked=true;
-            mute(0); }
-        else{
-            oa_mute=1;
-            m1.checked=true;
-            mute(1); }
-        document.cookie='oa_mute='+oa_mute+'; path=/; Max-Age=2592000';
+        for(let k=0; k<2; k++){
+            let m=document.querySelector('#m'+k);
+            if(oa_mute==k){
+                m.checked=true;
+                mute(k);
+                document.cookie='oa_mute='+k+'; path=/; Max-Age=2592000'; }
 
-        m0.onchange=function(){
-            mute(0);
-            document.cookie='oa_mute=0; path=/; Max-Age=2592000';
-            live_mute(); }
+            m.onchange=function(){
+                mute(k);
+                document.cookie='oa_mute='+k+'; path=/; Max-Age=2592000';
+                live_mute(); }}
 
-        m1.onchange=function(){
-            mute(1);
-            document.cookie='oa_mute=1; path=/; Max-Age=2592000';
-            live_mute(); }
+
+        oa_vol=get_cookie('oa_vol');
+        for(let k=0; k<6; k++){
+            let v=document.querySelector('#v'+k);
+            if(oa_vol==k){
+                v.checked=true;
+                document.cookie='oa_vol='+k+'; path=/; Max-Age=2592000'; }
+
+            v.onchange=function(){
+                document.cookie='oa_vol='+k+'; path=/; Max-Age=2592000';
+                live_mute(); }}
 
 
         oa_size=get_cookie('oa_size');
-        let s0=document.querySelector('#s0');
-        let s1=document.querySelector('#s1');
-        if(oa_size==0){
-            s0.checked=true; }
-        else{
-            oa_size=1;
-            s1.checked=true; }
-        document.cookie='oa_size='+oa_size+'; path=/; Max-Age=2592000';
+        for(let k=0; k<2; k++){
+            let s=document.querySelector('#s'+k);
+            if(oa_size==k){
+                s.checked=true;
+                document.cookie='oa_size='+k+'; path=/; Max-Age=2592000'; }
 
-        s0.onchange=function(){
-            document.cookie='oa_size=0; path=/; Max-Age=2592000';
-            live_mute(); }
-
-        s1.onchange=function(){
-            document.cookie='oa_size=1; path=/; Max-Age=2592000';
-            live_mute(); }
+            s.onchange=function(){
+                document.cookie='oa_size='+k+'; path=/; Max-Age=2592000';
+                live_mute(); }}
 
 
         oa_opac=get_cookie('oa_opac');
-        let o0=document.querySelector('#o0');
-        let o1=document.querySelector('#o1');
-        let o2=document.querySelector('#o2');
-        if(oa_opac==0){
-            o1.checked=true; }
-        else if(oa_opac==1){
-            o0.checked=true; }
-        else{
-            oa_opac=2;
-            o2.checked=true; }
-        document.cookie='oa_opac='+oa_opac+'; path=/; Max-Age=2592000';
+        for(let k=0; k<3; k++){
+            let o=document.querySelector('#o'+k);
+            if(oa_opac==k){
+                o.checked=true;
+                document.cookie='oa_opac='+k+'; path=/; Max-Age=2592000'; }
 
-        o0.onchange=function(){
-            document.cookie='oa_opac=1; path=/; Max-Age=2592000';
-            live_mute(); }
-
-        o1.onchange=function(){
-            document.cookie='oa_opac=0; path=/; Max-Age=2592000';
-            live_mute(); }
-
-        o2.onchange=function(){
-            document.cookie='oa_opac=2; path=/; Max-Age=2592000';
-            live_mute(); }
+            o.onchange=function(){
+                document.cookie='oa_opac='+k+'; path=/; Max-Age=2592000';
+                live_mute(); }}
 
 
         function mute(n){
-            let s0=document.querySelector('#s0');
-            let s1=document.querySelector('#s1');
-            let o0=document.querySelector('#o0');
-            let o1=document.querySelector('#o1');
-            let o2=document.querySelector('#o2');
-            if(n==0){
-                s0.disabled=false;
-                s1.disabled=false;
-                o0.disabled=false;
-                o1.disabled=false;
-                o2.disabled=false; }
-            else{
-                s0.disabled=true;
-                s1.disabled=true;
-                o0.disabled=true;
-                o1.disabled=true;
-                o2.disabled=true; }}
+            let oa_cont=document.querySelectorAll('.oa_cont');
+            for(let k=0; k<oa_cont.length; k++){
+                if(n==0){
+                    oa_cont[k].disabled=false; }
+                else{
+                    oa_cont[k].disabled=true; }}}
 
     } // set_radio()
 
