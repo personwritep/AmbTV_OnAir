@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.2
+// @version        3.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -180,13 +180,26 @@ function mute_act(n){ // 0: ミュート　1: 通常
     function sound(n){ // 0: ミュート  1: 通常
         oa_vol=get_cookie('oa_vol');
         let vol_val=[0, 0.1, 0.2, 0.4, 0.6, 1]; // 音量のデフォルト「0」
+        let mvol=vol_val[oa_vol];
 
         let video=document.querySelector('.com-a-Video__video video[src]');
         if(video){
             if(n==0){
-                video.volume=vol_val[oa_vol]; }
+                video.volume=(mvol +3)/4;
+                setTimeout(()=>{
+                    video.volume=(mvol +1)/2; }, 150 );
+                setTimeout(()=>{
+                    video.volume=(mvol*3 +1)/4; }, 300 );
+                setTimeout(()=>{
+                    video.volume=mvol; }, 450 ); }
             else{
-                video.volume=1; }}}
+                video.volume=(mvol*3 +1)/4;
+                setTimeout(()=>{
+                    video.volume=(mvol +1)/2; }, 150 );
+                setTimeout(()=>{
+                    video.volume=(mvol +3)/4; }, 300 );
+                setTimeout(()=>{
+                    video.volume=1; }, 450 ); }}}
 
 
     function view(n){ // 0: ミュート  1: 通常
