@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.3
+// @version        3.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -185,21 +185,35 @@ function mute_act(n){ // 0: ミュート　1: 通常
         let video=document.querySelector('.com-a-Video__video video[src]');
         if(video){
             if(n==0){
-                video.volume=(mvol +3)/4;
-                setTimeout(()=>{
-                    video.volume=(mvol +1)/2; }, 150 );
-                setTimeout(()=>{
-                    video.volume=(mvol*3 +1)/4; }, 300 );
-                setTimeout(()=>{
-                    video.volume=mvol; }, 450 ); }
+                slide_down(); }
             else{
-                video.volume=(mvol*3 +1)/4;
-                setTimeout(()=>{
-                    video.volume=(mvol +1)/2; }, 150 );
-                setTimeout(()=>{
-                    video.volume=(mvol +3)/4; }, 300 );
-                setTimeout(()=>{
-                    video.volume=1; }, 450 ); }}}
+                slide_up(); }}
+
+
+        function slide_down(){
+            let retry=0;
+            let vol;
+            let interval=setInterval(slide, 50);
+            function slide(){
+                retry++;
+                if(retry>9){
+                    clearInterval(interval); }
+                vol=mvol*retry+10-retry;
+                video.volume=vol/10; }}
+
+
+        function slide_up(){
+            let retry=0;
+            let vol;
+            let interval=setInterval(slide, 50);
+            function slide(){
+                retry++;
+                if(retry>9){
+                    clearInterval(interval); }
+                vol=mvol*(10-retry)+retry;
+                video.volume=vol/10; }}
+
+    } // sound()
 
 
     function view(n){ // 0: ミュート  1: 通常
@@ -552,7 +566,6 @@ function channel_setting(){
             '.c-tv-NowOnAirContainer__remote-controller { display: none; } '+
             '.com-tv-TVScreen__footer-container { '+
             'transform: translateY(0); visibility: hidden; transition: padding-left 0s; } '+
-            //        'body, button:enabled { cursor: none; } '+ // カーソルを非表示にする
             '</style>'+
 
             '<style class="oa_disp_style">'+
@@ -665,8 +678,7 @@ function ex_view(){
             if(document.documentElement.webkitRequestFullscreen){
                 document.documentElement.webkitRequestFullscreen(); }
             else if(document.documentElement.requestFullscreen){
-                document.documentElement.requestFullscreen(); }
-        }
+                document.documentElement.requestFullscreen(); }}
         else{
             document.exitFullscreen(); }}
 
