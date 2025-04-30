@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.4
+// @version        3.5
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -327,10 +327,10 @@ function cm_setting(){
 
 
     let NOAC=document.querySelector('.c-tv-NowOnAirContainer');
-    let clear_style=document.querySelector('.oa_clear_style');
-    let disp_style=document.querySelector('.oa_disp_style');
-    if(NOAC && clear_style && disp_style){
+    if(NOAC){
         NOAC.oncontextmenu=function(event){
+            let clear_style=document.querySelector('.oa_clear_style');
+            let disp_style=document.querySelector('.oa_disp_style');
             if(!event.ctrlKey || !event.shiftKey){
                 if(clear_style.disabled==true){
                     disp_style.disabled=true;
@@ -341,6 +341,7 @@ function cm_setting(){
 
         document.addEventListener('keydown', function(event){
             if(event.keyCode=='27'){
+                let clear_style=document.querySelector('.oa_clear_style');
                 if(clear_style.disabled==false){
                     clear_style.disabled=true; }}});
 
