@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.5
+// @version        3.6
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -567,6 +567,7 @@ function channel_setting(){
             '.c-tv-NowOnAirContainer__remote-controller { display: none; } '+
             '.com-tv-TVScreen__footer-container { '+
             'transform: translateY(0); visibility: hidden; transition: padding-left 0s; } '+
+            'button:enabled { cursor: none; } '+ // カーソル非表示
             '</style>'+
 
             '<style class="oa_disp_style">'+
