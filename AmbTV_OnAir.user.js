@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.7
+// @version        3.8
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -41,12 +41,6 @@ function tv_player_env(){
 
 
     history_content();
-
-
-    setTimeout(()=>{
-        slow();
-    }, 200);
-
 
 } // tv_player_env()
 
@@ -698,36 +692,46 @@ function not_fullscreen(){
 
 
 function history_content(){
-    let lastpath=sessionStorage.getItem('ATV_OA');
+    let style=
+        '<style class="hist_con">'+
+        '.com-pages-home-ScheduleGroupContentCarouselBase__slide:first-child { '+
+        'display: none; }</style>';
+    if(!document.querySelector('.hist_con')){
+        document.body.insertAdjacentHTML('beforeend', style); }
+
+
     if(location.pathname.startsWith('/now-on-air/')){
         header_view(1);
-        lastpath=location.pathname;
-        sessionStorage.setItem('ATV_OA', lastpath); }
+        get_title(); }
     else{
-        header_view(0); }
-
-    let CCP=document.querySelectorAll('.com-home-ChannelCardLinksPanel__item');
-    if(CCP.length>0){
-        for(let k=0; k<CCP.length; k++){
-            let link=CCP[k].querySelector('a').pathname;
-            if(link && link==lastpath){
-                CCP[k].style.boxShadow='0 0 0 4px #000, 0 0 0 6px #2196f3';
-                CCP[k].style.borderRadius='2px'; }}}
+        header_view(0);
+        setTimeout(()=>{
+            set_last();
+        }, 600); }
 
 
-    setTimeout(()=>{
-        let TACB=document.querySelectorAll('.com-home-TvAreaCardButton__background img');
-        if(TACB.length>0){
-            for(let k=0; k<TACB.length; k++){
-                let src=TACB[k].src;
-                src=src.split('.webp?')[0];
-                let srcl=src.split('/');
-                srcl='/now-on-air/'+ srcl[srcl.length -1];
-                if(srcl==lastpath){
-                    let but=TACB[k].closest('button');
-                    but.style.outline='2px solid #2196f3';
-                    but.style.borderRadius='2px'; }}}
-    }, 800);
+    function get_title(){
+        let LCL=document.querySelectorAll('.com-tv-LinearChannelListItem');
+        if(LCL.length>0){
+            for(let k=0; k<LCL.length; k++){
+                LCL[k].onclick=()=>{
+                    let lasttitle=set_histort(LCL[k]);
+                    sessionStorage.setItem('ATV_OA', lasttitle); }
+
+                function set_histort(link){
+                    let title=link.querySelector('.com-tv-LinearChannelListItem__title');
+                    if(title && title.textContent){
+                        return title.textContent; }}}}}
+
+
+    function set_last(){
+        let lasttitle=sessionStorage.getItem('ATV_OA');
+        let SGCC=document.querySelectorAll('.com-pages-home-ScheduleGroupContentCardItem');
+        for(let k=0; k<SGCC.length; k++){
+            let container=SGCC[k].querySelector('.com-a-CollapsedText__container');
+            if(container){
+                if(container.textContent==lasttitle){
+                    SGCC[k].click(); }}}}
 
 
     function header_view(n){
@@ -739,26 +743,3 @@ function history_content(){
                 header_style.disabled=false; }}}
 
 } // history_content()
-
-
-
-function slow(){
-    let CLR=document.querySelector('.com-home-ChannelListReorderButton');
-    if(CLR){
-        CLR.onclick=()=>{
-            let style=
-                '<style class="slow">'+
-                '.com-home-ChannelListReorderModalContainerView__inner { padding: 10px 32px; } '+
-                '.com-home-ChannelListReorderModalContainerView-heading { display: none; } '+
-                '.com-home-ChannelListReorderModalContainerView__scroll-area-container { '+
-                'margin-top: 0; overflow-y: scroll; scroll-behavior: smooth; } '+
-                '.com-home-ChannelListReorderModalContainerView__scroll-area { overflow-y: unset; } '+
-                '.com-home-ChannelListReorderModalContainerView__scroll-area-container:after { '+
-                'content: none; } '+
-                '</style>';
-
-            if(!document.querySelector('.slow')){
-                document.body.insertAdjacentHTML('beforeend', style); }
-        }}
-
-} // slow()
