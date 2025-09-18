@@ -692,14 +692,6 @@ function not_fullscreen(){
 
 
 function history_content(){
-    /*
-    let style=
-        '<style class="hist_con">'+
-        '.com-pages-home-ScheduleGroupContentCarouselBase__slide:first-child { '+
-        'display: none; }</style>';
-    if(!document.querySelector('.hist_con')){
-        document.body.insertAdjacentHTML('beforeend', style); }
-*/
 
     if(location.pathname.startsWith('/now-on-air/')){
         header_view(1);
@@ -742,7 +734,21 @@ function history_content(){
             let container=SGCC[k].querySelector('.com-a-CollapsedText__container');
             if(container){
                 if(container.textContent==lasttitle){
-                    SGCC[k].click(); }}}}
+                    SGCC[k].click();
+                    setTimeout(()=>{
+                        scroll_center(SGCC[k]);
+                    }, 200); }}}
+
+
+        function scroll_center(target){
+            let SGCCB=document.querySelector(
+                '.com-pages-home-ScheduleGroupContentCarouselBase__slide-list');
+            if(SGCCB){
+                let half_width=SGCCB.clientWidth/2
+                let scroll_w=target.offsetLeft - SGCCB.offsetLeft - half_width;
+                SGCCB.scrollTo(scroll_w, 0); }}
+
+    } // set_last()
 
 
     function header_view(n){
