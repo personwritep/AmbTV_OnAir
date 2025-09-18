@@ -692,7 +692,7 @@ function not_fullscreen(){
 
 
 function history_content(){
-/*
+    /*
     let style=
         '<style class="hist_con">'+
         '.com-pages-home-ScheduleGroupContentCarouselBase__slide:first-child { '+
@@ -707,6 +707,7 @@ function history_content(){
     else{
         header_view(0);
         setTimeout(()=>{
+            get_title_top();
             set_last();
         }, 600); }
 
@@ -723,6 +724,15 @@ function history_content(){
                     let title=link.querySelector('.com-tv-LinearChannelListItem__title');
                     if(title && title.textContent){
                         return title.textContent; }}}}}
+
+
+    function get_title_top(){
+        let SGCC=document.querySelectorAll('.com-pages-home-ScheduleGroupContentCardItem');
+        for(let k=0; k<SGCC.length; k++){
+            SGCC[k].onclick=()=>{
+                let container=SGCC[k].querySelector('.com-a-CollapsedText__container');
+                if(container && container.textContent){
+                    sessionStorage.setItem('ATV_OA', container.textContent); }}}}
 
 
     function set_last(){
