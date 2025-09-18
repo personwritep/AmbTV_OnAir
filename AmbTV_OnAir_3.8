@@ -692,13 +692,14 @@ function not_fullscreen(){
 
 
 function history_content(){
+/*
     let style=
         '<style class="hist_con">'+
         '.com-pages-home-ScheduleGroupContentCarouselBase__slide:first-child { '+
         'display: none; }</style>';
     if(!document.querySelector('.hist_con')){
         document.body.insertAdjacentHTML('beforeend', style); }
-
+*/
 
     if(location.pathname.startsWith('/now-on-air/')){
         header_view(1);
