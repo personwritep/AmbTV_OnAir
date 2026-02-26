@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.8
+// @version        3.9
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -153,11 +153,15 @@ function player_vol(TP){
     channel_setting();
     ex_view();
 
+    setTimeout(()=>{
+        vol_set();
+    }, 600);
+
 } // player_vol(TP)
 
 
 
-function mute_act(n){ // 0: ミュート　1: 通常
+function mute_act(n){ // 0: ミュート　1: 通常 🟨
     oa_mute=get_cookie('oa_mute');
 
     if(n==0){
@@ -171,20 +175,21 @@ function mute_act(n){ // 0: ミュート　1: 通常
         view(1); }
 
 
-    function sound(n){ // 0: ミュート  1: 通常
+    function sound(n){ // 0: ミュート  1: 通常 🟨
         oa_vol=get_cookie('oa_vol');
         let vol_val=[0, 0.1, 0.2, 0.4, 0.6, 1]; // 音量のデフォルト「0」
         let mvol=vol_val[oa_vol];
 
         let video=document.querySelector('.com-a-Video__video video[src]');
         if(video){
+            let reference=localStorage.getItem('AmbTVOA_V'); // 🟨
             if(n==0){
-                slide_down(); }
+                slide_down(reference); }
             else{
-                slide_up(); }}
+                slide_up(reference); }}
 
 
-        function slide_down(){
+        function slide_down(reference){
             let retry=0;
             let vol;
             let interval=setInterval(slide, 50);
@@ -193,10 +198,10 @@ function mute_act(n){ // 0: ミュート　1: 通常
                 if(retry>9){
                     clearInterval(interval); }
                 vol=mvol*retry+10-retry;
-                video.volume=vol/10; }}
+                video.volume=reference*vol/10; }} // 🟨
 
 
-        function slide_up(){
+        function slide_up(reference){
             let retry=0;
             let vol;
             let interval=setInterval(slide, 50);
@@ -205,7 +210,7 @@ function mute_act(n){ // 0: ミュート　1: 通常
                 if(retry>9){
                     clearInterval(interval); }
                 vol=mvol*(10-retry)+retry;
-                video.volume=vol/10; }}
+                video.volume=reference*vol/10; }} // 🟨
 
     } // sound()
 
@@ -421,7 +426,7 @@ function cm_pannel(){
                 live_mute(); }}
 
 
-        oa_vol=get_cookie('oa_vol');
+        oa_vol=get_cookie('oa_vol'); // 🟨
         for(let k=0; k<6; k++){
             let v=document.querySelector('#v'+k);
             if(oa_vol==k){
@@ -680,6 +685,20 @@ function ex_view(){
             document.exitFullscreen(); }}
 
 } // ex_view()
+
+
+
+function vol_set(){
+    let video=document.querySelector('.com-a-Video__video video[src]');
+    let slider=document.querySelector('.com-playback-Volume__slider-container');
+    if(video && slider){
+        video.addEventListener('volumechange', ()=>{
+            let opa=getComputedStyle(slider).opacity;
+            if(opa!=0 && muted==1){ // スライダーが表示されている時のみ音量をストレージ記録 🟨
+                let setVolume=Math.round(video.volume*10)/10
+                localStorage.setItem('AmbTVOA_V', setVolume); }}); }
+
+} // vol_set()
 
 
 
