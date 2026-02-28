@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        3.9
+// @version        4.0
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -571,7 +571,7 @@ function channel_setting(){
 
             '<style class="oa_disp_style">'+
             '.c-common-HeaderContainer-header { opacity: 1; visibility: visible; } '+
-            '.c-application-SideNavigation { display: flex; opacity: 1; visibility: visible;} '+
+            '.c-application-SideNavigation { display: flex; opacity: 1; visibility: visible; } '+
             '.c-tv-NowOnAirContainer__remote-controller { display: block; } '+
             '.com-tv-TVScreen__footer-container { transition: padding-left 0s; '+
             'transform: translateY(0); visibility: visible; padding-left: 64px; } '+
@@ -581,6 +581,11 @@ function channel_setting(){
             '.com-tv-TVScreen__player { height: 100vh !important; '+
             'width: 132%; margin: 0 -16%; }'+
             '.com-tv-TVController__fullscreen-button { color: red; } '+
+            '</style>'+
+
+            '<style class="vol_set_style">'+
+            '.com-playback-Volume .com-playback-Volume__slider-container { '+
+            'opacity: 1; visibility: visible; } '+
             '</style>';
 
         if(!header_right.querySelector('.cms_sw')){
@@ -598,6 +603,9 @@ function channel_setting(){
         if(ex_view_style){
             ex_view_style.disabled=true; }
 
+        let vol_set_style=document.querySelector('.vol_set_style');
+        if(vol_set_style){
+            vol_set_style.disabled=true; }
 
         let cha_style=document.querySelector('.cha_style');
         let cha_sw=document.querySelector('.cha_sw');
@@ -697,6 +705,50 @@ function vol_set(){
             if(opa!=0 && muted==1){ // スライダーが表示されている時のみ音量をストレージ記録 🟨
                 let setVolume=Math.round(video.volume*10)/10
                 localStorage.setItem('AmbTVOA_V', setVolume); }}); }
+
+
+
+    document.addEventListener('keydown', function(event){
+        if(event.shiftKey){
+            slider_disp(1);
+
+            if(event.keyCode=='40'){ //「⇩」キー Vol Down　🟨
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                vol_con(0); }
+
+            if(event.keyCode=='38'){ //「⇧」キー Vol Up　🟨
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                vol_con(1); }
+
+        }}, true ); // true必須
+
+
+    document.addEventListener('keyup', function(event){
+        if(!event.shiftKey){
+            slider_disp(0);
+        }}, true);
+
+
+    function vol_con(n){
+        let video=document.querySelector('.com-a-Video__video-element'); // 🟨
+        if(video){
+            if(n==0){
+                if(video.volume>=0.1){
+                    video.volume -=0.1 }}
+            if(n==1){
+                if(video.volume<=0.9){
+                    video.volume +=0.1 }}}}
+
+
+    function slider_disp(n){
+        let vol_set_style=document.querySelector('.vol_set_style');
+        if(vol_set_style){
+            if(n==0){
+                vol_set_style.disabled=true; }
+            else{
+                vol_set_style.disabled=false; }}}
 
 } // vol_set()
 
