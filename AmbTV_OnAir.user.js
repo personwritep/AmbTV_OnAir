@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        4.0
+// @version        4.1
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -516,10 +516,9 @@ function channel_setting(){
             '</style>'+
 
             '<style>'+
-            '.c-application-SideNavigation__wrapper'+
-            '.c-application-SideNavigation__wrapper--collapsed { background: none; } '+
-            '.com-application-SideNavigationMainList { background: #00000040; } '+
-            '.com-application-SideNavigationAccountItem { background: #00000040; } '+
+            '.com-application-SideNavigation, '+
+            '.com-application-SideNavigation__wrapper { background: none; } '+
+            '.com-application-SideNavItemList { height: 100%; background: #00000040; } '+
             '.com-tv-TVScreen__player { background-color: #000; } '+
             '.com-tv-LinearFooter { height: 124px; background: none; } '+
             '.com-tv-LinearFooter__bottom-block { background: #00000040; } '+
@@ -562,7 +561,7 @@ function channel_setting(){
 
             '<style class="oa_clear_style">'+
             '.c-common-HeaderContainer-header { opacity: 0; visibility: hidden; } '+
-            '.c-application-SideNavigation { display: none; } '+
+            '.com-application-SideNavigation { display: none; } '+
             '.c-tv-NowOnAirContainer__remote-controller { display: none; } '+
             '.com-tv-TVScreen__footer-container { '+
             'transform: translateY(0); visibility: hidden; transition: padding-left 0s; } '+
@@ -571,7 +570,7 @@ function channel_setting(){
 
             '<style class="oa_disp_style">'+
             '.c-common-HeaderContainer-header { opacity: 1; visibility: visible; } '+
-            '.c-application-SideNavigation { display: flex; opacity: 1; visibility: visible; } '+
+            '.com-application-SideNavigation { display: flex; opacity: 1; visibility: visible; } '+
             '.c-tv-NowOnAirContainer__remote-controller { display: block; } '+
             '.com-tv-TVScreen__footer-container { transition: padding-left 0s; '+
             'transform: translateY(0); visibility: visible; padding-left: 64px; } '+
