@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        4.1
+// @version        4.2
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -28,15 +28,15 @@ monitor0.observe(target, { childList: true });
 tv_player_env();
 
 function tv_player_env(){
-    let retry=0;
-    let interval=setInterval(wait_target, 20);
-    function wait_target(){
-        retry++;
-        if(retry>100){ // リトライ制限 100回 2secまで
-            clearInterval(interval); }
+    let retry0=0;
+    let interval0=setInterval(wait_target0, 20);
+    function wait_target0(){
+        retry0++;
+        if(retry0>100){ // リトライ制限 100回 2secまで
+            clearInterval(interval0); }
         let TP=document.querySelector('.com-tv-TVScreen__player');
         if(TP){
-            clearInterval(interval);
+            clearInterval(interval0);
             player_vol(TP); }}
 
 
@@ -89,12 +89,12 @@ function player_vol(TP){
         let canvas=document.querySelector('#cvs');
 
 
-        let retry_s=0;
-        let interval_s=setInterval(cv_check, 1000);
+        let retry1=0;
+        let interval1=setInterval(cv_check, 1000);
         function cv_check(){
-            retry_s++
-            if(retry_s>15){ // リトライ制限 15sec
-                clearInterval(interval_s); }
+            retry1++
+            if(retry1>15){ // リトライ制限 15sec
+                clearInterval(interval1); }
             capture(canvas);
 
             function capture(canvas){
@@ -110,7 +110,7 @@ function player_vol(TP){
 
                         if(data[0]+data[1]+data[2]!=0){ // ADの場合
                             mute_act(0);
-                            retry_s=16; }}}} // capture()
+                            retry1=16; }}}} // capture()
 
         } // cv_check()
 
@@ -762,61 +762,71 @@ function not_fullscreen(){
 
 
 function history_content(){
-
     if(location.pathname.startsWith('/now-on-air/')){
         header_view(1);
         get_title(); }
     else{
         header_view(0);
-        setTimeout(()=>{
-            get_title_top();
-            set_last();
-        }, 600); }
+        set_last(); }
 
 
     function get_title(){
-        let LCL=document.querySelectorAll('.com-tv-LinearChannelListItem');
-        if(LCL.length>0){
-            for(let k=0; k<LCL.length; k++){
-                LCL[k].onclick=()=>{
-                    let lasttitle=set_histort(LCL[k]);
-                    sessionStorage.setItem('ATV_OA', lasttitle); }
+        let channels=document.querySelector('.com-tv-LinearChannelList__inner');
+        if(channels){
+            let monitor5=new MutationObserver(changed);
+            monitor5.observe(channels, { attributeFilter: ['class'] });
 
-                function set_histort(link){
-                    let title=link.querySelector('.com-tv-LinearChannelListItem__title');
-                    if(title && title.textContent){
-                        return title.textContent; }}}}}
+            changed();
 
+            function changed(){
+                setTimeout(()=>{
+                    let active=document.querySelector('.com-tv-LinearChannelListItem--active');
+                    if(active){
+                        let lasttitle=set_histort(active);
+                        sessionStorage.setItem('ATV_OA', lasttitle); }
 
-    function get_title_top(){
-        let SGCC=document.querySelectorAll('.com-pages-home-ScheduleGroupContentCardItem');
-        for(let k=0; k<SGCC.length; k++){
-            SGCC[k].onclick=()=>{
-                let container=SGCC[k].querySelector('.com-a-CollapsedText__container');
-                if(container && container.textContent){
-                    sessionStorage.setItem('ATV_OA', container.textContent); }}}}
+                    function set_histort(link){
+                        let title=link.querySelector('.com-tv-LinearChannelListItem__title');
+                        if(title && title.textContent){
+                            return title.textContent; }}
+                }, 200); }
+
+        }} // get_title()
 
 
     function set_last(){
         let lasttitle=sessionStorage.getItem('ATV_OA');
-        let SGCC=document.querySelectorAll('.com-pages-home-ScheduleGroupContentCardItem');
-        for(let k=0; k<SGCC.length; k++){
-            let container=SGCC[k].querySelector('.com-a-CollapsedText__container');
-            if(container){
-                if(container.textContent==lasttitle){
-                    SGCC[k].click();
-                    setTimeout(()=>{
-                        scroll_center(SGCC[k]);
-                    }, 200); }}}
+
+        let retry2=0;
+        let interval2=setInterval(wait_target2, 20);
+        function wait_target2(){
+            retry2++;
+            if(retry2>100){ // リトライ制限 100回 2secまで
+                clearInterval(interval2); }
+            let HPCCB=document.querySelector(
+                '.com-pages-home-HomePreviewContentCarouselBase__slide-list');
+            if(HPCCB){
+                clearInterval(interval2);
+                set_last_channel(HPCCB); }}
 
 
-        function scroll_center(target){
-            let SGCCB=document.querySelector(
-                '.com-pages-home-ScheduleGroupContentCarouselBase__slide-list');
-            if(SGCCB){
-                let half_width=SGCCB.clientWidth/2
-                let scroll_w=target.offsetLeft - SGCCB.offsetLeft - half_width;
-                SGCCB.scrollTo(scroll_w, 0); }}
+        function set_last_channel(HPCCB){
+            let HPCC=document.querySelectorAll('.com-pages-home-HomePreviewContentCardItem');
+            for(let k=0; k<HPCC.length; k++){
+                let container=HPCC[k].querySelector('.com-a-CollapsedText__container');
+                if(container){
+                    if(container.textContent==lasttitle){
+                        HPCC[k].click();
+                        setTimeout(()=>{
+                            scroll_center(HPCC[k], HPCCB);
+                        }, 100); }}}
+
+            function scroll_center(target, slide_list){
+                let half_width=slide_list.clientWidth/2
+                let scroll_w=target.offsetLeft - slide_list.offsetLeft - half_width;
+                slide_list.scrollTo(scroll_w, 0); }
+
+        } // set_last_channel()
 
     } // set_last()
 
