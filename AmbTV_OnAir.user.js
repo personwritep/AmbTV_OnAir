@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        4.2
+// @version        4.3
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -19,6 +19,7 @@ let oa_size;
 let oa_opac;
 let oa_channel;
 let muted=1; // ミュート状態のフラグ 0:ミュート 1:通常
+let v_vc=get_cookie('oa_first_view'); // プレーヤー画面の初期表示 0: Video 1: Vodeo+Channel
 
 
 let target=document.querySelector('head > title');
@@ -499,20 +500,23 @@ function channel_setting(){
         let sw=
             '<div class="cms_sw">CM Mute</div>'+
             '<div class="cha_sw">Channel <span>▢</span></div>'+
+            '<div class="first_view">Video</div>'+
             '<style>'+
-            '.com-application-Header__right { display: flex; flex-basis: 440px !important; } '+
-            '.cms_sw, .cha_sw { font: 14px Meiryo; align-self: center; cursor: pointer; '+
+            '.com-application-Header__right { display: flex; flex-basis: auto; } '+
+            '.com-search-SearchForm { width: 240px; } '+
+            '.cms_sw, .cha_sw, .first_view { font: 14px Meiryo; align-self: center; cursor: pointer; '+
             'padding: 12px 6px 0; height: 46px; white-space: nowrap; color: #fff; '+
             'border: 1px solid #333; border-radius: 4px; background: #212121; } '+
             '.cms_sw { margin-right: 20px; display: none; } '+
-            '.cha_sw { margin-right: 30px; display: none; } '+
+            '.cha_sw { margin-right: 20px; display: none; } '+
+            '.first_view { margin-right: 60px; display: none; } '+
             '.cha_sw span { display: inline-block; } '+
-            '.cms_sw:hover, .cha_sw:hover { background: #373737; } '+
+            '.cms_sw:hover, .cha_sw:hover, .first_view:hover { background: #373737; } '+
             '</style>'+
 
             '<style class="header_style">'+
             '.com-application-Header { background: #00000040; } '+
-            '.cms_sw, .cha_sw { display: block; } '+
+            '.cms_sw, .cha_sw, .first_view { display: block; } '+
             '</style>'+
 
             '<style>'+
@@ -660,7 +664,41 @@ function channel_setting(){
                 if(!amboa){
                     cm_pannel(); }
                 else{
-                    amboa.remove(); }}}}
+                    amboa.remove(); }}}
+
+
+
+        let first_view=document.querySelector('.first_view');
+        if(first_view){
+            v_vc=get_cookie('oa_first_view');
+            if(v_vc!='1'){
+                v_vc='0';
+                document.cookie='oa_first_view=0; path=/; Max-Age=2592000';
+                fsw_view(0); }
+            else{
+                v_vc='1';
+                document.cookie='oa_first_view=1; path=/; Max-Age=2592000';
+                fsw_view(1); }
+
+            first_view.onclick=function(){
+                if(v_vc=='0'){
+                    v_vc='1'
+                    document.cookie='oa_first_view=1; path=/; Max-Age=2592000';
+                    fsw_view(1); }
+                else{
+                    v_vc='0';
+                    document.cookie='oa_first_view=0; path=/; Max-Age=2592000';
+                    fsw_view(0); }}
+
+            function fsw_view(n){
+                if(n==0){
+                    first_view.textContent='Video'; }
+                else{
+                    first_view.textContent='Video+Channel'; }}
+
+        } // if(first_view)
+
+    } // if(header_right)
 
 } // channel_setting()
 
@@ -742,6 +780,13 @@ function vol_set(){
 
 
     function slider_disp(n){
+        let bar=document.querySelector('.com-a-Slider__bar');
+        if(bar){
+            let v_hight=getComputedStyle(bar).height.replace('px', '');
+            let hilight=bar.querySelector('.com-a-Slider__highlighter');
+            if(hilight){
+                hilight.style.height=(v_hight/1)*video.volume +'px'; }}
+
         let vol_set_style=document.querySelector('.vol_set_style');
         if(vol_set_style){
             if(n==0){
@@ -767,46 +812,70 @@ function history_content(){
         get_title(); }
     else{
         header_view(0);
-        set_last(); }
+        set_last();
+        first_enter(); }
+
+
+    function header_view(n){
+        let header_style=document.querySelector('.header_style');
+        if(header_style){
+            if(n==0){
+                header_style.disabled=true; }
+            else{
+                header_style.disabled=false; }}}
 
 
     function get_title(){
-        let channels=document.querySelector('.com-tv-LinearChannelList__inner');
-        if(channels){
-            let monitor5=new MutationObserver(changed);
-            monitor5.observe(channels, { attributeFilter: ['class'] });
-
-            changed();
-
-            function changed(){
-                setTimeout(()=>{
-                    let active=document.querySelector('.com-tv-LinearChannelListItem--active');
-                    if(active){
-                        let lasttitle=set_histort(active);
-                        sessionStorage.setItem('ATV_OA', lasttitle); }
-
-                    function set_histort(link){
-                        let title=link.querySelector('.com-tv-LinearChannelListItem__title');
-                        if(title && title.textContent){
-                            return title.textContent; }}
-                }, 200); }
-
-        }} // get_title()
-
-
-    function set_last(){
-        let lasttitle=sessionStorage.getItem('ATV_OA');
-
         let retry2=0;
         let interval2=setInterval(wait_target2, 20);
         function wait_target2(){
             retry2++;
             if(retry2>100){ // リトライ制限 100回 2secまで
                 clearInterval(interval2); }
+            let now_channel=document.querySelector('.com-tv-LinearChannelListItem--active');
+            if(now_channel){
+                clearInterval(interval2);
+                get_channel(now_channel); }}
+
+
+        function get_channel(now_channel){
+            set_histort(now_channel);
+
+            let channels=now_channel.closest('.com-tv-LinearChannelList__inner');
+            if(channels){
+                let monitor5=new MutationObserver(changed);
+                monitor5.observe(channels, { attributes: true, attributeFilter: ['class'] });
+
+                function changed(){
+                    setTimeout(()=>{
+                        let active=channels.querySelector('.com-tv-LinearChannelListItem--active');
+                        if(active){
+                            set_histort(active); }
+                    }, 200); }}
+
+
+            function set_histort(select){
+                let link=select.querySelector('.com-a-Link');
+                if(link && link.title){
+                    sessionStorage.setItem('ATV_OA', link.title); }}
+
+        } // get_channel()
+    } // get_title()
+
+
+    function set_last(){
+        let lasttitle=sessionStorage.getItem('ATV_OA');
+
+        let retry3=0;
+        let interval3=setInterval(wait_target3, 20);
+        function wait_target3(){
+            retry3++;
+            if(retry3>100){ // リトライ制限 100回 2secまで
+                clearInterval(interval3); }
             let HPCCB=document.querySelector(
                 '.com-pages-home-HomePreviewContentCarouselBase__slide-list');
             if(HPCCB){
-                clearInterval(interval2);
+                clearInterval(interval3);
                 set_last_channel(HPCCB); }}
 
 
@@ -827,16 +896,38 @@ function history_content(){
                 slide_list.scrollTo(scroll_w, 0); }
 
         } // set_last_channel()
-
     } // set_last()
 
 
-    function header_view(n){
-        let header_style=document.querySelector('.header_style');
-        if(header_style){
-            if(n==0){
-                header_style.disabled=true; }
-            else{
-                header_style.disabled=false; }}}
+    function first_enter(){
+        document.addEventListener('click', function(event){
+            let elem=document.elementFromPoint(event.clientX, event.clientY);
+            let TvArea_PO=elem.closest('.com-pages-home-TvArea__PreviewOverview-container');
+            if(TvArea_PO && v_vc=='0'){
+                let style_remote=
+                    '<style class="first_remote">'+
+                    '.com-tv-TVScreen__player { transform: unset !important; opacity: 1 !important; } '+
+                    '.c-tv-NowOnAirContainer__screen { width: 100% !important; } '+
+                    '.c-common-HeaderContainer-header, '+
+                    '.com-application-SideNavigation, '+
+                    '.c-tv-NowOnAirContainer__remote-controller, '+
+                    '.c-tv-NowOnAirContainer__side-panel, '+
+                    '.com-tv-TVScreen__footer-container { display: none; } '+
+                    'button:enabled { cursor: none; } '+ // カーソル非表示
+                    '</style>';
+                if(!document.querySelector('.first_remote')){
+                    document.body.insertAdjacentHTML('beforeend', style_remote); }
+
+                setTimeout(()=>{
+                    if(document.querySelector('.first_remote')){
+                        document.querySelector('.first_remote').remove(); }
+
+                    let clear_style=document.querySelector('.oa_clear_style');
+                    if(clear_style){
+                        clear_style.disabled=false; }
+                }, 2000); }
+        });
+
+    } // first_enter()
 
 } // history_content()
