@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        AmbTV OnAir
 // @namespace        http://tampermonkey.net/
-// @version        4.3
+// @version        4.4
 // @description        AbemaTV ユーティリティ
 // @author        AbemaTV User
 // @match        https://abema.tv/*
@@ -588,7 +588,7 @@ function channel_setting(){
 
             '<style class="vol_set_style">'+
             '.com-playback-Volume .com-playback-Volume__slider-container { '+
-            'opacity: 1; visibility: visible; } '+
+            'opacity: 1 !important; visibility: visible !important; } '+
             '</style>';
 
         if(!header_right.querySelector('.cms_sw')){
@@ -746,7 +746,7 @@ function vol_set(){
 
 
     document.addEventListener('keydown', function(event){
-        if(event.shiftKey){
+        if(event.shiftKey && if_air()){
             slider_disp(1);
 
             if(event.keyCode=='40'){ //「⇩」キー Vol Down　🟨
@@ -763,9 +763,16 @@ function vol_set(){
 
 
     document.addEventListener('keyup', function(event){
-        if(!event.shiftKey){
+        if(!event.shiftKey && if_air()){
             slider_disp(0);
         }}, true);
+
+
+    function if_air(){
+        if(location.pathname.includes('now-on-air')){
+            return true; }
+        else{
+            return false; }}
 
 
     function vol_con(n){
