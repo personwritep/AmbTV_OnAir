@@ -1,0 +1,307 @@
+// ==UserScript==
+// @name         AmbTV OnAir
+// @namespace    http://tampermonkey.net/
+// @version      0.5
+// @description  AbemaTV ユーティリティ
+// @author       Ameba User
+// @match       https://abema.tv/*
+// @icon          https://www.google.com/s2/favicons?sz=64&domain=abema.tv
+// @grant        none
+// ==/UserScript==
+
+
+let oa_mute;
+let oa_size;
+let oa_opac;
+
+
+
+let target=document.querySelector('head > title');
+let monitor0=new MutationObserver(tv_player_env);
+monitor0.observe(target, { childList: true });
+
+tv_player_env();
+
+function tv_player_env(){
+    let retry=0;
+    let interval=setInterval(wait_target, 20);
+    function wait_target(){
+        retry++;
+        if(retry>100){ // リトライ制限 100回 2secまで
+            clearInterval(interval); }
+        let TP=document.querySelector('.com-tv-TVScreen__player');
+        if(TP){
+            clearInterval(interval);
+            player_vol(TP); }}
+
+} // tv_player_env()
+
+
+
+function player_vol(TP){
+    setTimeout(()=>{
+        v_vol(1); // チャンネル変更時にミュートをリセット
+    }, 600);
+
+    setTimeout(()=>{
+        let side=document.querySelector('.com-tv-FeedSidePanel__close-button');
+        if(side){
+            side.click(); }
+    }, 600);
+
+    setTimeout(()=>{
+        let HM=document.querySelector('.com-m-HeaderMenu');
+        let SNc=document.querySelector('.c-application-SideNavigation--collapsed');
+        if(HM && !SNc){
+            HM.click(); }
+    }, 700);
+
+
+
+    let monitor1=new MutationObserver(con_vol);
+    monitor1.observe( TP, { childList: true });
+
+    con_vol();
+
+    function con_vol(){
+        let LF=document.querySelector('.com-tv-LinearFooter__feed-super');
+        if(TP.querySelector('.com-tv-TVScreen__eyecatch')){
+            v_vol(1); }
+        else{
+            if(!LF.textContent){
+                v_vol(0); }}}
+
+
+
+    setTimeout(()=>{
+        let Video=TP.querySelector('video');
+        if(Video){
+            let monitor2=new MutationObserver(con_vol2);
+            monitor2.observe( Video, { attributes: true });
+
+            function con_vol2(){
+                setTimeout(()=>{
+                    let LF=document.querySelector('.com-tv-LinearFooter__feed-super');
+                    if(LF.textContent){
+                        v_vol(1); }}, 2000 ); }
+        }
+    }, 600 );
+
+
+    check_cookie();
+    cm_setting();
+
+} // player_vol(TP)
+
+
+
+function v_vol(n){ // 0: ミュート　1: 通常
+    oa_mute=get_cookie('oa_mute');
+    let button=document.querySelector('.com-playback-Volume__icon-button');
+    if(button){
+        let label=button.getAttribute('aria-label');
+        if(n==0 && label=='音声をオフにする'){
+            if(oa_mute==0){
+                button.click(); }}
+        else if(n==1 && label=='音声をオンにする'){
+            button.click(); }
+
+        setTimeout(()=>{
+            let label_=button.getAttribute('aria-label');
+            if(label_=='音声をオフにする'){ // 音声ON
+                view(1); }
+            else{
+                view(0); }
+        }, 20);
+
+
+        function view(n){ // 0: ミュート  1: 通常
+            oa_opac=get_cookie('oa_opac');
+            oa_size=get_cookie('oa_size');
+            let TVS=document.querySelector('.com-tv-TVScreen__player-container');
+            if(TVS){
+                if(n==0){
+                    TVS.style.transition='all .5s';
+                    if(oa_opac==0){
+                        TVS.style.opacity='0.5'; }
+                    else if(oa_opac==1){
+                        TVS.style.opacity='0'; }
+                    else{
+                        TVS.style.opacity='1'; }
+                    if(oa_size==0){
+                        TVS.style.transform='scale(0.5)'; }
+                    else{
+                        TVS.style.transform='scale(1)'; }}
+                else{
+                    TVS.style.transition='';
+                    TVS.style.opacity='1';
+                    TVS.style.transform='scale(1)'; }}}
+
+    } // button
+} // v_vol()
+
+
+
+function get_cookie(name){
+    let cookie_req=document.cookie.split('; ').find(row=>row.startsWith(name));
+    if(cookie_req){
+        if(cookie_req.split('=')[1]==null){
+            return 0; }
+        else{
+            return cookie_req.split('=')[1]; }}
+    if(!cookie_req){
+        return 0; }}
+
+
+
+function check_cookie(){
+    oa_mute=get_cookie('oa_mute');
+    if(oa_mute!=1){
+        oa_mute=0; }
+    document.cookie='oa_mute='+oa_mute+'; Max-Age=2592000';
+
+    oa_size=get_cookie('oa_size');
+    if(oa_size!=1){
+        oa_size=0; }
+    document.cookie='oa_size='+oa_size+'; Max-Age=2592000';
+
+    oa_opac=get_cookie('oa_opac');
+    if(oa_opac!=0 && oa_opac!=1 && oa_opac!=2){
+        oa_opac=0; }
+    document.cookie='oa_opac='+oa_opac+'; Max-Age=2592000';
+
+} // check_cookie()
+
+
+
+function cm_setting(){
+    let TVS=document.querySelector('.com-tv-TVScreen__player-container');
+    if(TVS){
+        TVS.onclick=function(event){
+            if(event.ctrlKey){
+                let panel=
+                    '<div id="amboa">'+
+                    '<div id="oa_head">コマーシャルの表示設定　'+
+                    '<input type="button" id="oa_close" value="×"></div>'+
+                    '<div>　音声：'+
+                    '<input name="mute" type="radio" id="m0">ミュート　'+
+                    '<input name="mute" type="radio" id="m1">通常'+
+                    '</div>'+
+                    '<div>　画面：'+
+                    '<input name="size" type="radio" id="s0">縮小　'+
+                    '<input name="size" type="radio" id="s1">通常'+
+                    '</div>'+
+                    '<div>　明度：'+
+                    '<input name="opacity" type="radio" id="o0">0　'+
+                    '<input name="opacity" type="radio" id="o1">50　'+
+                    '<input name="opacity" type="radio" id="o2">100'+
+                    '</div>'+
+                    '<div></div>'+
+                    '<style>#amboa { position: fixed; z-index: 100; top: 60px; left: 40%; '+
+                    'font: 16px/24px Meiryo; color: #000; padding: 8px 10px 6px; '+
+                    'border: 1px solid #aaa; border-radius: 6px; background: #fff; } '+
+                    '#oa_head { margin: 0 0 10px; padding: 5px 8px 3px 15px; '+
+                    'font-weight: bold; color: #fff; background: #2196f3; text-align: center; } '+
+                    '#oa_close { padding: 0 2px; height: 20px; line-height: 16px; } '+
+                    'input[type="radio"]{ margin: 0 .2em; }'+
+                    '</style>'+
+                    '</div>';
+                if(!document.querySelector('#amboa')){
+                    document.body.insertAdjacentHTML('beforeend', panel); }
+
+                set_radio();
+
+                function set_radio(){
+                    oa_mute=get_cookie('oa_mute');
+                    let m0=document.querySelector('#m0');
+                    let m1=document.querySelector('#m1');
+                    if(oa_mute==0){
+                        m0.checked=true;
+                        mute(0); }
+                    else{
+                        oa_mute=1;
+                        m1.checked=true;
+                        mute(1); }
+                    document.cookie='oa_mute='+oa_mute+'; Max-Age=2592000';
+
+                    m0.onchange=function(){
+                        mute(0);
+                        document.cookie='oa_mute=0; Max-Age=2592000'; }
+
+                    m1.onchange=function(){
+                        mute(1);
+                        document.cookie='oa_mute=1; Max-Age=2592000'; }
+
+
+                    oa_size=get_cookie('oa_size');
+                    let s0=document.querySelector('#s0');
+                    let s1=document.querySelector('#s1');
+                    if(oa_size==0){
+                        s0.checked=true; }
+                    else{
+                        oa_size=1;
+                        s1.checked=true; }
+                    document.cookie='oa_size='+oa_size+'; Max-Age=2592000';
+
+                    s0.onchange=function(){
+                        document.cookie='oa_size=0; Max-Age=2592000'; }
+
+                    s1.onchange=function(){
+                        document.cookie='oa_size=1; Max-Age=2592000'; }
+
+
+                    oa_opac=get_cookie('oa_opac');
+                    let o0=document.querySelector('#o0');
+                    let o1=document.querySelector('#o1');
+                    let o2=document.querySelector('#o2');
+                    if(oa_opac==0){
+                        o1.checked=true; }
+                    else if(oa_opac==1){
+                        o0.checked=true; }
+                    else{
+                        oa_opac=2;
+                        o2.checked=true; }
+                    document.cookie='oa_opac='+oa_opac+'; Max-Age=2592000';
+
+                    o0.onchange=function(){
+                        document.cookie='oa_opac=1; Max-Age=2592000'; }
+
+                    o1.onchange=function(){
+                        document.cookie='oa_opac=0; Max-Age=2592000'; }
+
+                    o2.onchange=function(){
+                        document.cookie='oa_opac=2; Max-Age=2592000'; }
+
+
+                    function mute(n){
+                        let s0=document.querySelector('#s0');
+                        let s1=document.querySelector('#s1');
+                        let o0=document.querySelector('#o0');
+                        let o1=document.querySelector('#o1');
+                        let o2=document.querySelector('#o2');
+                        if(n==0){
+                            s0.disabled=false;
+                            s1.disabled=false;
+                            o0.disabled=false;
+                            o1.disabled=false;
+                            o2.disabled=false; }
+                        else{
+                            s0.disabled=true;
+                            s1.disabled=true;
+                            o0.disabled=true;
+                            o1.disabled=true;
+                            o2.disabled=true; }}
+
+                } // set_radio()
+
+
+                let amboa=document.querySelector('#amboa');
+                let oa_close=document.querySelector('#oa_close');
+                if(amboa && oa_close){
+                    oa_close.onclick=function(event){
+                        event.preventDefault();
+                        amboa.remove(); }}
+
+            }}}
+
+} // cm_setting()
